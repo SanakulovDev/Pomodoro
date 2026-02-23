@@ -925,6 +925,78 @@
   .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--short); display:inline-block; margin-left:4px; }
   .sync-dot.syncing { animation:dotPulse 1s infinite; background:var(--accent2); }
 
+  /* ====== LIGHT THEME ====== */
+  body.light {
+    --bg: #f5f0e8;
+    --surface: #fffef9;
+    --border: #e0d8cc;
+    --accent: #e63b1f;
+    --accent2: #e08c00;
+    --accent3: #00a878;
+    --text: #1a1a2e;
+    --muted: #8a8070;
+    --work: #e63b1f;
+    --short: #00a878;
+    --long: #1a6fbd;
+  }
+
+  body.light::before {
+    background-image:
+      linear-gradient(rgba(230,59,31,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230,59,31,0.06) 1px, transparent 1px);
+  }
+
+  body.light .auth-card,
+  body.light .panel-card,
+  body.light .task-area,
+  body.light .mode-tabs,
+  body.light .user-chip,
+  body.light .notification {
+    background: #fffef9;
+    border-color: #e0d8cc;
+    color: #1a1a2e;
+  }
+
+  body.light .auth-wall { background: rgba(245,240,232,0.97); }
+  body.light .focus-overlay { background: rgba(245,240,232,0.97); }
+  body.light .number-input { background: #f5f0e8; border-color: #e0d8cc; color: #1a1a2e; }
+  body.light .step-btn { background: #e0d8cc; color: #1a1a2e; }
+  body.light .btn-icon { background: #fffef9; border-color: #e0d8cc; color: #8a8070; }
+  body.light .sound-btn { background: #f5f0e8; border-color: #e0d8cc; color: #8a8070; }
+  body.light .todo-item { background: #f5f0e8; border-color: #e0d8cc; }
+  body.light .analytics-item { background: #f5f0e8; border-color: #e0d8cc; }
+  body.light .streak-day { background: #e0d8cc; }
+  body.light .add-todo input { background: #f5f0e8; border-color: #e0d8cc; color: #1a1a2e; }
+  body.light .toggle-slider { background: #e0d8cc; }
+  body.light header { border-color: #e0d8cc; }
+  body.light .stat-chip { background: #fffef9; border-color: #e0d8cc; }
+  body.light .panel-card-header { border-color: #e0d8cc; color: #8a8070; }
+  body.light .mode-tab { color: #8a8070; border-color: #e0d8cc; }
+  body.light .mode-tab.active { background: rgba(0,0,0,0.03); }
+  body.light body::after { opacity: 0.2; }
+  body.light .user-dropdown { background: #fffef9; border-color: #e0d8cc; }
+  body.light .user-dropdown-item { color: #1a1a2e; }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover {
+    border-color: var(--muted);
+    transform: rotate(20deg);
+  }
+
 </style>
 </head>
 <body>
@@ -996,6 +1068,8 @@
       <div class="stat-chip">
         JAMI<span id="headerTotal">0</span>
       </div>
+      <!-- Theme toggle -->
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tun/Kun rejimi">🌙</button>
       <!-- User chip injected here by JS -->
       <div id="headerUserSlot"></div>
     </div>
@@ -1251,7 +1325,7 @@ function loadState() {
     if (state.running) {
       // Resume
       state.startedAt = Date.now(); // reset startedAt to now for accuracy
-      tickInterval = setInterval(tick, 1000);
+      tickInterval = setInterval(() => (window.tick || tick)(), 1000);
       document.getElementById('mainBtn').textContent = 'TO\'XTATISH';
       document.getElementById('clockWrap').classList.add('running');
     }
@@ -1443,7 +1517,7 @@ function startTimer() {
   state.pausedAt = null;
   document.getElementById('mainBtn').textContent = "TO'XTATISH";
   document.getElementById('clockWrap').classList.add('running');
-  tickInterval = setInterval(tick, 1000);
+  tickInterval = setInterval(() => (window.tick || tick)(), 1000);
   requestWakeLock();
   saveState();
 }
@@ -2061,6 +2135,70 @@ window.recordPomodoro = function() {
 // Also patch the direct call in handleSessionEnd
 const _origHandleSessionEnd = handleSessionEnd;
 
+
+
+// ============================================================
+// DARK / LIGHT THEME
+// ============================================================
+function initTheme() {
+  const saved = localStorage.getItem('zaman_theme') || 'dark';
+  applyTheme(saved);
+}
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeToggle').textContent = '☀️';
+  } else {
+    document.body.classList.remove('light');
+    document.getElementById('themeToggle').textContent = '🌙';
+  }
+  localStorage.setItem('zaman_theme', theme);
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.contains('light');
+  applyTheme(isLight ? 'dark' : 'light');
+}
+
+// ============================================================
+// TICK SOUND — har sekundda
+// ============================================================
+// Mavjud tick funksiyasini override qilamiz
+const _origTick = tick;
+window.tick = function() {
+  _origTick();
+  // Taymer ishlayotganda har sekundda ovoz
+  if (state.running && state.timeLeft > 0) {
+    playTickSound();
+  }
+};
+
+function playTickSound() {
+  if (!document.getElementById('soundEnabled').checked) return;
+  // Har bir sound paketning o'ziga xos tick ovozi
+  const sounds = SOUNDS[state.currentSound] || SOUNDS.bell;
+  if (sounds.tick) {
+    sounds.tick();
+  } else {
+    // Default subtle tick
+    playTone(800, 0.04, 'sine', 0.06);
+  }
+}
+
+// Bell va Chime uchun ham tick qo'shamiz (avval bo'sh edi)
+SOUNDS.bell.tick = () => {
+  playTone(1200, 0.05, 'sine', 0.04);
+};
+SOUNDS.chime.tick = () => {
+  playTone(900, 0.06, 'sine', 0.05);
+};
+SOUNDS.gong.tick = () => {
+  playTone(400, 0.04, 'sine', 0.03);
+};
+
+// Theme ni init qilish
+initTheme();
 
 // Init Firebase auth
 initFirebaseAuth();
