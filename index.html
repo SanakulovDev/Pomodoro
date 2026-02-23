@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAMAN — Pomodoro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, increment }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCVkBum8vWy-LmUmTERun9UqUoArwgjBME",
+    authDomain: "pomodoro-e1835.firebaseapp.com",
+    projectId: "pomodoro-e1835",
+    storageBucket: "pomodoro-e1835.firebasestorage.app",
+    messagingSenderId: "769997683153",
+    appId: "1:769997683153:web:bae99d33fd3da14d4cc8f0",
+    measurementId: "G-KLMWN6C7F8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  // Expose to window for main script
+  window._fb = { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc, updateDoc, increment };
+</script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #ff4d2e;
+    --accent2: #ffb347;
+    --accent3: #4dffb4;
+    --text: #e8e8f0;
+    --muted: #555570;
+    --work: #ff4d2e;
+    --short: #4dffb4;
+    --long: #4d9fff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,77,46,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,77,46,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Noise overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 30px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sub {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: -4px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .stat-chip span {
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 700;
+    display: block;
+    text-align: center;
+  }
+
+  /* Main layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    flex: 1;
+    padding-top: 30px;
+  }
+
+  /* Timer section */
+  .timer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .mode-tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-tab:last-child { border-right: none; }
+
+  .mode-tab::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .mode-tab[data-mode="work"]::before { background: var(--work); }
+  .mode-tab[data-mode="short"]::before { background: var(--short); }
+  .mode-tab[data-mode="long"]::before { background: var(--long); }
+
+  .mode-tab.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .mode-tab.active::before { transform: scaleX(1); }
+  .mode-tab[data-mode="work"].active { color: var(--work); }
+  .mode-tab[data-mode="short"].active { color: var(--short); }
+  .mode-tab[data-mode="long"].active { color: var(--long); }
+
+  /* Clock face */
+  .clock-wrap {
+    position: relative;
+    width: min(360px, 90vw);
+    height: min(360px, 90vw);
+  }
+
+  .clock-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .clock-bg-ring {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 3;
+  }
+
+  .clock-progress {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  /* Tick marks */
+  .tick-mark {
+    stroke: var(--muted);
+    stroke-width: 1;
+  }
+
+  .tick-mark-major {
+    stroke: var(--border);
+    stroke-width: 2;
+  }
+
+  .clock-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .time-display {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(3.5rem, 12vw, 6rem);
+    letter-spacing: 6px;
+    line-height: 1;
+    transition: color 0.5s;
+  }
+
+  .time-label {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .session-indicator {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .session-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .session-dot.done { background: var(--accent); }
+  .session-dot.current {
+    background: var(--accent2);
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .btn-main {
+    padding: 14px 50px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+
+  .btn-main:hover::before { transform: translateX(0); }
+  .btn-main:active { transform: scale(0.97); }
+
+  .btn-icon {
+    padding: 14px 16px;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    font-size: 1rem;
+  }
+
+  .btn-icon:hover { color: var(--text); border-color: var(--muted); }
+
+  /* Task input */
+  .task-area {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.3s;
+  }
+
+  .task-area:focus-within { border-color: var(--accent); }
+
+  .task-area input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .task-area input::placeholder { color: var(--muted); }
+
+  .task-area .task-icon { color: var(--muted); font-size: 1rem; }
+
+  /* Right panel */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .panel-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .panel-card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Settings */
+  .settings-grid {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .setting-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .setting-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .number-input {
+    width: 50px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 4px;
+    border-radius: 2px;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+
+  .number-input::-webkit-outer-spin-button,
+  .number-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .step-btn {
+    width: 24px;
+    height: 24px;
+    background: var(--border);
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .step-btn:hover { background: var(--muted); }
+
+  /* Toggle switch */
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 20px;
+    transition: 0.3s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 3px;
+    top: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+    background: #fff;
+  }
+
+  /* Todo list */
+  .todo-list {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+  .todo-list::-webkit-scrollbar { width: 3px; }
+  .todo-list::-webkit-scrollbar-track { background: transparent; }
+  .todo-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .todo-item.active-task {
+    border-color: var(--accent);
+    background: rgba(255,77,46,0.05);
+  }
+
+  .todo-item.done-task { opacity: 0.4; }
+
+  .todo-check {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--muted);
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--accent);
+    transition: all 0.2s;
+  }
+
+  .todo-item.done-task .todo-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .todo-text {
+    flex: 1;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .todo-item.done-task .todo-text { text-decoration: line-through; color: var(--muted); }
+
+  .todo-pomos {
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .todo-del {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 0 2px;
+  }
+
+  .todo-item:hover .todo-del { opacity: 1; }
+
+  .add-todo {
+    display: flex;
+    gap: 6px;
+    padding: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .add-todo input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 7px 10px;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .add-todo input:focus { border-color: var(--accent); }
+
+  .add-todo button {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 7px 12px;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+  }
+
+  .add-todo button:hover { opacity: 0.8; }
+
+  /* Analytics */
+  .analytics-grid {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .analytics-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .analytics-val {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .analytics-label {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Streak bar */
+  .streak-display {
+    padding: 12px 16px;
+  }
+
+  .streak-days {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .streak-day {
+    width: 22px;
+    height: 22px;
+    border-radius: 2px;
+    background: var(--border);
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .streak-day.has-pomos { background: var(--accent); opacity: 0.5; }
+  .streak-day.today { background: var(--accent); opacity: 1; outline: 1px solid var(--accent2); }
+
+  /* Sound selector */
+  .sound-selector {
+    padding: 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sound-btn {
+    padding: 5px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .sound-btn:hover, .sound-btn.active {
+    color: var(--text);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* Notification bar */
+  .notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 14px 24px;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    box-shadow: 0 0 30px rgba(255,77,46,0.3);
+  }
+
+  .notification.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Status bar at top */
+  .status-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    z-index: 999;
+    transition: background 0.5s;
+  }
+
+  .status-bar.work { background: linear-gradient(90deg, var(--work), var(--accent2)); }
+  .status-bar.short { background: var(--short); }
+  .status-bar.long { background: var(--long); }
+
+  /* Pulse animation when running */
+  @keyframes ringPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,77,46,0.4); }
+    100% { box-shadow: 0 0 0 20px rgba(255,77,46,0); }
+  }
+
+  .clock-wrap.running::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    animation: ringPulse 2s ease-out infinite;
+    pointer-events: none;
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .right-panel {
+      order: 2;
+    }
+
+    .header-stats {
+      gap: 10px;
+    }
+
+    .stat-chip {
+      padding: 4px 8px;
+      font-size: 0.6rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-stats { display: none; }
+    .controls { flex-wrap: wrap; justify-content: center; }
+  }
+
+  /* Focus mode overlay */
+  .focus-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.96);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+
+  .focus-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .focus-time {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(8rem, 25vw, 16rem);
+    letter-spacing: 10px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .focus-task {
+    font-size: 0.9rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+  }
+
+  .focus-exit {
+    margin-top: 20px;
+    padding: 10px 24px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .focus-exit:hover { border-color: var(--muted); color: var(--text); }
+
+  /* Progress wave */
+  .progress-wave {
+    width: 100%;
+    height: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-main.break { background: var(--short); }
+  .btn-main.long-break { background: var(--long); }
+
+  select.number-input {
+    width: auto;
+    padding: 4px 6px;
+  }
+
+  /* ====== AUTH WALL ====== */
+  .auth-wall {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.97);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    backdrop-filter: blur(8px);
+  }
+  .auth-wall.visible { opacity: 1; pointer-events: all; }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .auth-card-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3rem;
+    letter-spacing: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .auth-card-sub { font-size:0.6rem; letter-spacing:3px; color:var(--muted); margin-bottom:32px; text-transform:uppercase; }
+  .auth-badge { display:inline-block; background:rgba(255,77,46,0.1); border:1px solid rgba(255,77,46,0.3); color:var(--accent); font-size:0.65rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; margin-bottom:24px; text-transform:uppercase; }
+  .auth-title { font-family:'Bebas Neue',cursive; font-size:1.6rem; letter-spacing:4px; margin-bottom:12px; }
+  .auth-desc { font-size:0.72rem; color:var(--muted); line-height:1.7; margin-bottom:32px; letter-spacing:0.5px; }
+  .auth-desc strong { color:var(--accent2); }
+  .auth-pomos-left { font-family:'Bebas Neue',cursive; font-size:4rem; color:var(--accent); line-height:1; margin-bottom:4px; }
+  .auth-pomos-label { font-size:0.6rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:24px; }
+  .btn-google {
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    width:100%; padding:14px 24px; background:#fff; color:#333; border:none; border-radius:3px;
+    font-family:'Space Mono',monospace; font-size:0.75rem; letter-spacing:2px; font-weight:700;
+    cursor:pointer; transition:all 0.2s; text-transform:uppercase;
+  }
+  .btn-google:hover { background:#f0f0f0; transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  .btn-google svg { width:20px; height:20px; flex-shrink:0; }
+  .auth-skip { margin-top:16px; background:none; border:none; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:2px; cursor:pointer; text-transform:uppercase; text-decoration:underline; transition:color 0.2s; display:block; width:100%; }
+  .auth-skip:hover { color:var(--text); }
+  /* User chip */
+  .user-chip { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:6px 12px; cursor:pointer; transition:border-color 0.2s; position:relative; }
+  .user-chip:hover { border-color:var(--muted); }
+  .user-avatar { width:24px; height:24px; border-radius:50%; object-fit:cover; }
+  .user-name { font-size:0.65rem; letter-spacing:1px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .user-dropdown { position:absolute; top:calc(100% + 6px); right:0; background:var(--surface); border:1px solid var(--border); border-radius:2px; min-width:160px; z-index:100; display:none; }
+  .user-chip:hover .user-dropdown { display:block; }
+  .user-dropdown-item { padding:10px 14px; font-size:0.65rem; letter-spacing:1px; cursor:pointer; transition:background 0.2s; text-transform:uppercase; border:none; background:none; color:var(--text); width:100%; text-align:left; font-family:'Space Mono',monospace; }
+  .user-dropdown-item:hover { background:rgba(255,255,255,0.05); }
+  .user-dropdown-item.danger { color:var(--accent); }
+  .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--short); display:inline-block; margin-left:4px; }
+  .sync-dot.syncing { animation:dotPulse 1s infinite; background:var(--accent2); }
+
+</style>
+</head>
+<body>
+
+
+<!-- ========== AUTH WALL ========== -->
+<div class="auth-wall" id="authWall">
+  <div class="auth-card">
+    <div class="auth-card-logo">ZAMAN</div>
+    <div class="auth-card-sub">Vaqtni boshqar · Pomodoro</div>
+    <div class="auth-badge">🍅 Bepul limitga yetdingiz</div>
+    <div class="auth-pomos-left" id="authPomosLeft">3</div>
+    <div class="auth-pomos-label">ta bepul pomodoro ishlatdingiz</div>
+    <div class="auth-title">Davom etish uchun kiring</div>
+    <div class="auth-desc">
+      Google bilan kirish <strong>bepul</strong> va atigi bir soniya oladi.<br>
+      Statistikangiz, vazifalaringiz va streak'laringiz<br>
+      <strong>barcha qurilmalaringizda saqlanadi</strong>.
+    </div>
+    <button class="btn-google" id="googleLoginBtn" onclick="firebaseLogin()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Google bilan kirish
+    </button>
+    <button class="auth-skip" onclick="skipAuth()">Hozircha o'tkazib yuborish (cheklangan)</button>
+  </div>
+</div>
+
+<!-- ========== USER PROFILE (header ichida ko'rsatiladi) ========== -->
+<div id="userChipWrap" style="display:none">
+  <div class="user-chip">
+    <img class="user-avatar" id="userAvatar" src="" alt=""/>
+    <span class="user-name" id="userName"></span>
+    <span class="sync-dot" id="syncDot" title="Cloud bilan sinxron"></span>
+    <div class="user-dropdown">
+      <button class="user-dropdown-item" onclick="showProfile()">👤 Profil</button>
+      <button class="user-dropdown-item danger" onclick="firebaseLogout()">⏻ Chiqish</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar work" id="statusBar"></div>
+<div class="notification" id="notification"></div>
+
+<!-- Focus mode overlay -->
+<div class="focus-overlay" id="focusOverlay">
+  <div class="focus-task" id="focusTaskLabel">DIQQAT REJIMI</div>
+  <div class="focus-time" id="focusTime">25:00</div>
+  <button class="focus-exit" onclick="exitFocusMode()">✕ CHIQISH</button>
+</div>
+
+<div class="container">
+  <header>
+    <div>
+      <div class="logo">ZAMAN</div>
+      <div class="logo-sub">Vaqtni boshqar · Pomodoro</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-chip">
+        BUGUN<span id="headerToday">0</span>
+      </div>
+      <div class="stat-chip">
+        STREAK<span id="headerStreak">0🔥</span>
+      </div>
+      <div class="stat-chip">
+        JAMI<span id="headerTotal">0</span>
+      </div>
+      <!-- User chip injected here by JS -->
+      <div id="headerUserSlot"></div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Timer section -->
+    <div class="timer-section">
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="work" onclick="switchMode('work')">
+          ⚡ ISHLASH
+        </button>
+        <button class="mode-tab" data-mode="short" onclick="switchMode('short')">
+          ☕ QISQA DAM
+        </button>
+        <button class="mode-tab" data-mode="long" onclick="switchMode('long')">
+          🌙 UZUN DAM
+        </button>
+      </div>
+
+      <!-- Clock -->
+      <div class="clock-wrap" id="clockWrap">
+        <svg class="clock-svg" viewBox="0 0 300 300">
+          <circle class="clock-bg-ring" cx="150" cy="150" r="140"/>
+          <!-- Tick marks -->
+          <g id="tickMarks"></g>
+          <!-- Progress arc -->
+          <circle class="clock-progress" id="progressArc" cx="150" cy="150" r="140"
+            stroke="var(--work)"
+            stroke-dasharray="879.6"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="clock-center">
+          <div class="time-display" id="timeDisplay">25:00</div>
+          <div class="time-label" id="modeLabel">ISHLASH VAQTI</div>
+          <div class="session-indicator" id="sessionDots"></div>
+        </div>
+      </div>
+
+      <!-- Current task input -->
+      <div class="task-area">
+        <span class="task-icon">📌</span>
+        <input type="text" id="currentTask" placeholder="Hozir nima qilyapsiz?..." maxlength="60"/>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn btn-icon" onclick="resetTimer()" title="Qayta boshlash">↺</button>
+        <button class="btn btn-main" id="mainBtn" onclick="toggleTimer()">BOSHLASH</button>
+        <button class="btn btn-icon" onclick="toggleFocusMode()" title="Diqqat rejimi">⛶</button>
+        <button class="btn btn-icon" onclick="skipSession()" title="O'tkazib yuborish">⏭</button>
+      </div>
+
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+
+      <!-- Settings -->
+      <div class="panel-card">
+        <div class="panel-card-header">
+          ⚙ Sozlamalar
+          <button class="step-btn" onclick="saveSettings()" style="font-size:0.6rem;padding:0 6px;width:auto;letter-spacing:1px;">SAQLASH</button>
+        </div>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <span class="setting-label">Ishlash (daq)</span>
+            <div class="setting-control">
+              <button class="step-btn" onclick="adjustSetting('work', -5)">−</button>
+              <input type="number" class="number-input" id="setWork" value="25" min="1" max="90"/>
+              <button class="step-btn" onclick="adjustSetting('work', 5)">+</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Qisqa dam (daq)</span>
+            <div class="setting-control">
+              <button class="step-btn" onclick="adjustSetting('short', -1)">−</button>
+              <input type="number" class="number-input" id="setShort" value="5" min="1" max="30"/>
+              <button class="step-btn" onclick="adjustSetting('short', 1)">+</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Uzun dam (daq)</span>
+            <div class="setting-control">
+              <button class="step-btn" onclick="adjustSetting('long', -5)">−</button>
+              <input type="number" class="number-input" id="setLong" value="15" min="5" max="60"/>
+              <button class="step-btn" onclick="adjustSetting('long', 5)">+</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Avtomatik o'tish</span>
+            <label class="toggle">
+              <input type="checkbox" id="autoSwitch" checked/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Bildirishnoma</span>
+            <label class="toggle">
+              <input type="checkbox" id="notifEnabled" checked onchange="requestNotifPerm()"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Ovoz</span>
+            <label class="toggle">
+              <input type="checkbox" id="soundEnabled" checked/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sound selector -->
+      <div class="panel-card">
+        <div class="panel-card-header">🔊 Ovoz turi</div>
+        <div class="sound-selector">
+          <button class="sound-btn active" data-sound="bell" onclick="selectSound(this)">🔔 Qo'ng'iroq</button>
+          <button class="sound-btn" data-sound="digital" onclick="selectSound(this)">📟 Digital</button>
+          <button class="sound-btn" data-sound="nature" onclick="selectSound(this)">🌿 Tabiat</button>
+          <button class="sound-btn" data-sound="chime" onclick="selectSound(this)">✨ Chime</button>
+          <button class="sound-btn" data-sound="gong" onclick="selectSound(this)">🥁 Gong</button>
+        </div>
+      </div>
+
+      <!-- Tasks / Todo -->
+      <div class="panel-card">
+        <div class="panel-card-header">
+          📋 Vazifalar
+          <span id="todoProgress" style="color:var(--accent2)">0/0</span>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+        <div class="add-todo">
+          <input type="text" id="newTodoInput" placeholder="Yangi vazifa..." maxlength="50"
+            onkeypress="if(event.key==='Enter') addTodo()"/>
+          <button onclick="addTodo()">+</button>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div class="panel-card">
+        <div class="panel-card-header">📊 Statistika</div>
+        <div class="analytics-grid">
+          <div class="analytics-item">
+            <div class="analytics-val" id="statToday">0</div>
+            <div class="analytics-label">Bugungi</div>
+          </div>
+          <div class="analytics-item">
+            <div class="analytics-val" id="statWeek">0</div>
+            <div class="analytics-label">Haftalik</div>
+          </div>
+          <div class="analytics-item">
+            <div class="analytics-val" id="statFocus">0h</div>
+            <div class="analytics-label">Diqqat vaqti</div>
+          </div>
+          <div class="analytics-item">
+            <div class="analytics-val" id="statStreak">0</div>
+            <div class="analytics-label">Streak 🔥</div>
+          </div>
+        </div>
+        <!-- Streak calendar -->
+        <div class="streak-display">
+          <div style="font-size:0.55rem;color:var(--muted);letter-spacing:2px;margin-bottom:8px;">SO'NGGI 28 KUN</div>
+          <div class="streak-days" id="streakDays"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const CIRCUMFERENCE = 2 * Math.PI * 140; // 879.64
+
+let state = {
+  mode: 'work',       // work | short | long
+  running: false,
+  timeLeft: 0,        // seconds
+  totalTime: 0,
+  sessionCount: 0,    // completed work sessions today
+  pomodoroNumber: 1,  // which pomodoro in current cycle (1-4)
+  currentSound: 'bell',
+  startedAt: null,    // timestamp when timer started
+  pausedAt: null,     // timestamp when paused
+  settings: {
+    work: 25,
+    short: 5,
+    long: 15,
+    autoSwitch: true
+  }
+};
+
+let tickInterval = null;
+let wakeLock = null;
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function saveState() {
+  const toSave = {
+    mode: state.mode,
+    running: state.running,
+    timeLeft: state.timeLeft,
+    totalTime: state.totalTime,
+    sessionCount: state.sessionCount,
+    pomodoroNumber: state.pomodoroNumber,
+    currentSound: state.currentSound,
+    startedAt: state.startedAt,
+    pausedAt: state.pausedAt,
+    settings: state.settings,
+    savedAt: Date.now()
+  };
+  localStorage.setItem('zaman_state', JSON.stringify(toSave));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('zaman_state');
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    // Reconstruct correct timeLeft based on elapsed time
+    if (saved.running && saved.startedAt) {
+      const elapsed = Math.floor((Date.now() - saved.startedAt) / 1000);
+      saved.timeLeft = Math.max(0, saved.timeLeft - elapsed);
+      if (saved.timeLeft === 0) {
+        // Session finished while away
+        handleSessionEnd(true);
+        return;
+      }
+    } else if (!saved.running && saved.pausedAt) {
+      // Was paused - timeLeft stays same
+    }
+
+    Object.assign(state, saved);
+    // Restore settings inputs
+    document.getElementById('setWork').value = state.settings.work;
+    document.getElementById('setShort').value = state.settings.short;
+    document.getElementById('setLong').value = state.settings.long;
+    document.getElementById('autoSwitch').checked = state.settings.autoSwitch;
+    state.currentSound = saved.currentSound || 'bell';
+    document.querySelectorAll('.sound-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.sound === state.currentSound);
+    });
+
+    updateModeUI();
+    updateDisplay();
+
+    if (state.running) {
+      // Resume
+      state.startedAt = Date.now(); // reset startedAt to now for accuracy
+      tickInterval = setInterval(tick, 1000);
+      document.getElementById('mainBtn').textContent = 'TO\'XTATISH';
+      document.getElementById('clockWrap').classList.add('running');
+    }
+  } catch(e) { console.warn('State load failed', e); }
+}
+
+// ============================================================
+// ANALYTICS PERSISTENCE
+// ============================================================
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getAnalytics() {
+  const raw = localStorage.getItem('zaman_analytics');
+  return raw ? JSON.parse(raw) : {};
+}
+
+function recordPomodoro() {
+  const key = getTodayKey();
+  const analytics = getAnalytics();
+  if (!analytics[key]) analytics[key] = 0;
+  analytics[key]++;
+  localStorage.setItem('zaman_analytics', JSON.stringify(analytics));
+}
+
+function updateStats() {
+  const analytics = getAnalytics();
+  const today = getTodayKey();
+  const todayCount = analytics[today] || 0;
+
+  // Week total
+  let weekTotal = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = d.toISOString().slice(0, 10);
+    weekTotal += analytics[k] || 0;
+  }
+
+  // Streak
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const k = d.toISOString().slice(0, 10);
+    if ((analytics[k] || 0) > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+    if (streak > 365) break;
+  }
+
+  const focusHours = Math.round(weekTotal * state.settings.work / 60 * 10) / 10;
+
+  document.getElementById('statToday').textContent = todayCount;
+  document.getElementById('statWeek').textContent = weekTotal;
+  document.getElementById('statFocus').textContent = focusHours + 'h';
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('headerToday').textContent = todayCount;
+  document.getElementById('headerStreak').textContent = streak + '🔥';
+  document.getElementById('headerTotal').textContent = Object.values(analytics).reduce((a,b)=>a+b,0);
+
+  // Streak calendar
+  const container = document.getElementById('streakDays');
+  container.innerHTML = '';
+  for (let i = 27; i >= 0; i--) {
+    const dd = new Date(); dd.setDate(dd.getDate() - i);
+    const k = dd.toISOString().slice(0, 10);
+    const div = document.createElement('div');
+    div.className = 'streak-day';
+    if (k === today) div.classList.add('today');
+    else if ((analytics[k] || 0) > 0) div.classList.add('has-pomos');
+    div.title = k + ': ' + (analytics[k] || 0) + ' pomodoro';
+    container.appendChild(div);
+  }
+}
+
+// ============================================================
+// TICK MARKS
+// ============================================================
+function drawTickMarks() {
+  const g = document.getElementById('tickMarks');
+  for (let i = 0; i < 60; i++) {
+    const angle = (i / 60) * 360;
+    const rad = (angle - 90) * Math.PI / 180;
+    const r1 = i % 5 === 0 ? 128 : 134;
+    const r2 = 140;
+    const x1 = 150 + r1 * Math.cos(rad);
+    const y1 = 150 + r1 * Math.sin(rad);
+    const x2 = 150 + r2 * Math.cos(rad);
+    const y2 = 150 + r2 * Math.sin(rad);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', i % 5 === 0 ? '#2a2a3e' : '#1a1a28');
+    line.setAttribute('stroke-width', i % 5 === 0 ? '2' : '1');
+    g.appendChild(line);
+  }
+}
+
+// ============================================================
+// TIMER CORE
+// ============================================================
+function getModeTime(mode) {
+  const s = state.settings;
+  if (mode === 'work') return s.work * 60;
+  if (mode === 'short') return s.short * 60;
+  if (mode === 'long') return s.long * 60;
+}
+
+function switchMode(mode) {
+  if (state.running) stopTimer();
+  state.mode = mode;
+  state.timeLeft = getModeTime(mode);
+  state.totalTime = state.timeLeft;
+  updateModeUI();
+  updateDisplay();
+  saveState();
+}
+
+function updateModeUI() {
+  // Tabs
+  document.querySelectorAll('.mode-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === state.mode);
+  });
+
+  // Labels and colors
+  const labels = { work: 'ISHLASH VAQTI', short: 'QISQA DAM', long: 'UZUN DAM' };
+  const colors = { work: 'var(--work)', short: 'var(--short)', long: 'var(--long)' };
+  const classMap = { work: 'work', short: 'short', long: 'long' };
+
+  document.getElementById('modeLabel').textContent = labels[state.mode];
+  document.getElementById('timeDisplay').style.color = colors[state.mode];
+  document.getElementById('progressArc').style.stroke = colors[state.mode];
+
+  const sb = document.getElementById('statusBar');
+  sb.className = 'status-bar ' + classMap[state.mode];
+
+  const btn = document.getElementById('mainBtn');
+  btn.className = 'btn btn-main';
+  if (state.mode === 'short') btn.classList.add('break');
+  if (state.mode === 'long') btn.classList.add('long-break');
+
+  updateSessionDots();
+}
+
+function updateDisplay() {
+  const mins = Math.floor(state.timeLeft / 60);
+  const secs = state.timeLeft % 60;
+  const str = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  document.getElementById('timeDisplay').textContent = str;
+  document.getElementById('focusTime').textContent = str;
+  document.title = str + ' — ZAMAN';
+
+  // Progress arc
+  const total = state.totalTime || getModeTime(state.mode);
+  const fraction = state.timeLeft / total;
+  const offset = CIRCUMFERENCE * (1 - fraction);
+  document.getElementById('progressArc').style.strokeDashoffset = offset;
+}
+
+function updateSessionDots() {
+  const container = document.getElementById('sessionDots');
+  container.innerHTML = '';
+  const maxDots = 4;
+  for (let i = 0; i < maxDots; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'session-dot';
+    if (i < state.pomodoroNumber - 1) dot.classList.add('done');
+    else if (i === state.pomodoroNumber - 1 && state.mode === 'work') dot.classList.add('current');
+    container.appendChild(dot);
+  }
+}
+
+function toggleTimer() {
+  if (state.running) {
+    stopTimer();
+  } else {
+    startTimer();
+  }
+}
+
+function startTimer() {
+  if (state.timeLeft === 0) {
+    state.timeLeft = getModeTime(state.mode);
+    state.totalTime = state.timeLeft;
+  }
+  state.running = true;
+  state.startedAt = Date.now();
+  state.pausedAt = null;
+  document.getElementById('mainBtn').textContent = "TO'XTATISH";
+  document.getElementById('clockWrap').classList.add('running');
+  tickInterval = setInterval(tick, 1000);
+  requestWakeLock();
+  saveState();
+}
+
+function stopTimer() {
+  state.running = false;
+  state.pausedAt = Date.now();
+  clearInterval(tickInterval);
+  tickInterval = null;
+  document.getElementById('mainBtn').textContent = 'DAVOM ETISH';
+  document.getElementById('clockWrap').classList.remove('running');
+  releaseWakeLock();
+  saveState();
+}
+
+function resetTimer() {
+  if (state.running) stopTimer();
+  state.timeLeft = getModeTime(state.mode);
+  state.totalTime = state.timeLeft;
+  document.getElementById('mainBtn').textContent = 'BOSHLASH';
+  updateDisplay();
+  saveState();
+}
+
+function skipSession() {
+  if (state.running) stopTimer();
+  handleSessionEnd(false);
+}
+
+function tick() {
+  if (state.timeLeft > 0) {
+    state.timeLeft--;
+    updateDisplay();
+    // Update startedAt-based tracking
+    if (state.timeLeft % 5 === 0) saveState();
+  } else {
+    handleSessionEnd(false);
+  }
+}
+
+function handleSessionEnd(silent) {
+  clearInterval(tickInterval);
+  tickInterval = null;
+  state.running = false;
+  document.getElementById('clockWrap').classList.remove('running');
+  releaseWakeLock();
+
+  if (state.mode === 'work') {
+    // Completed a pomodoro!
+    state.sessionCount++;
+    (window.recordPomodoro || recordPomodoro)();
+    updateStats();
+
+    if (!silent) {
+      playSound('complete');
+      notify('🎉 Pomodoro tugadi! Vaqt: ' + state.settings.work + ' daqiqa');
+    }
+
+    if (state.pomodoroNumber >= 4) {
+      // Long break
+      state.pomodoroNumber = 1;
+      if (state.settings.autoSwitch) {
+        setTimeout(() => switchMode('long'), 500);
+      }
+    } else {
+      state.pomodoroNumber++;
+      if (state.settings.autoSwitch) {
+        setTimeout(() => switchMode('short'), 500);
+      }
+    }
+  } else {
+    // Break done
+    if (!silent) {
+      playSound('break_end');
+      notify('⚡ Dam olish tugadi! Ishlashga tayyor?');
+    }
+    if (state.settings.autoSwitch) {
+      setTimeout(() => switchMode('work'), 500);
+    }
+  }
+
+  document.getElementById('mainBtn').textContent = 'BOSHLASH';
+  updateSessionDots();
+  saveState();
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function adjustSetting(key, delta) {
+  const input = document.getElementById('set' + key.charAt(0).toUpperCase() + key.slice(1));
+  let val = parseInt(input.value) + delta;
+  val = Math.max(1, Math.min(90, val));
+  input.value = val;
+}
+
+function saveSettings() {
+  state.settings.work = parseInt(document.getElementById('setWork').value) || 25;
+  state.settings.short = parseInt(document.getElementById('setShort').value) || 5;
+  state.settings.long = parseInt(document.getElementById('setLong').value) || 15;
+  state.settings.autoSwitch = document.getElementById('autoSwitch').checked;
+
+  if (!state.running) {
+    state.timeLeft = getModeTime(state.mode);
+    state.totalTime = state.timeLeft;
+    updateDisplay();
+  }
+  saveState();
+  notify('✓ Sozlamalar saqlandi');
+}
+
+// ============================================================
+// SOUND ENGINE (Web Audio API)
+// ============================================================
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, duration, type = 'sine', gain = 0.5, delay = 0) {
+  if (!document.getElementById('soundEnabled').checked) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gainNode.gain.setValueAtTime(0, ctx.currentTime + delay);
+    gainNode.gain.linearRampToValueAtTime(gain, ctx.currentTime + delay + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch(e) {}
+}
+
+const SOUNDS = {
+  bell: {
+    complete: () => {
+      playTone(880, 1.5, 'sine', 0.4);
+      playTone(1046, 1.2, 'sine', 0.3, 0.15);
+      playTone(1318, 1.5, 'sine', 0.3, 0.3);
+      playTone(880, 2, 'sine', 0.2, 0.6);
+    },
+    break_end: () => {
+      playTone(523, 0.8, 'sine', 0.4);
+      playTone(659, 0.8, 'sine', 0.4, 0.2);
+      playTone(784, 1.2, 'sine', 0.4, 0.4);
+    },
+    tick: () => {}
+  },
+  digital: {
+    complete: () => {
+      [0,0.15,0.3,0.45,0.6].forEach((d,i) => playTone(440 + i*100, 0.1, 'square', 0.2, d));
+    },
+    break_end: () => {
+      [0,0.2,0.4].forEach((d,i) => playTone(600 + i*150, 0.15, 'square', 0.25, d));
+    },
+    tick: () => playTone(880, 0.04, 'square', 0.05)
+  },
+  nature: {
+    complete: () => {
+      // Bird-like chirps
+      [523,698,880,1046,1318].forEach((f,i) => {
+        playTone(f, 0.3, 'sine', 0.25, i*0.12);
+        playTone(f*1.5, 0.2, 'sine', 0.15, i*0.12+0.05);
+      });
+    },
+    break_end: () => {
+      [880,1046,1318,880].forEach((f,i) => playTone(f, 0.35, 'sine', 0.3, i*0.1));
+    },
+    tick: () => playTone(600, 0.05, 'sine', 0.04)
+  },
+  chime: {
+    complete: () => {
+      const freqs = [523, 659, 784, 1047, 1319, 1568];
+      freqs.forEach((f, i) => playTone(f, 1.5, 'sine', 0.3, i * 0.18));
+    },
+    break_end: () => {
+      [784, 659, 523].forEach((f, i) => playTone(f, 1.2, 'sine', 0.3, i * 0.2));
+    },
+    tick: () => {}
+  },
+  gong: {
+    complete: () => {
+      playTone(80, 3, 'sine', 0.5);
+      playTone(160, 2.5, 'sine', 0.2, 0.05);
+      playTone(320, 2, 'sine', 0.1, 0.1);
+      playTone(120, 3, 'triangle', 0.3, 0.3);
+    },
+    break_end: () => {
+      playTone(110, 2, 'sine', 0.4);
+      playTone(220, 1.5, 'sine', 0.2, 0.2);
+    },
+    tick: () => {}
+  }
+};
+
+function playSound(type) {
+  if (!document.getElementById('soundEnabled').checked) return;
+  const sounds = SOUNDS[state.currentSound] || SOUNDS.bell;
+  if (sounds[type]) sounds[type]();
+}
+
+function selectSound(btn) {
+  document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.currentSound = btn.dataset.sound;
+  // Test the sound
+  playSound('complete');
+  saveState();
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function notify(msg) {
+  // In-app notification
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+
+  // Browser notification
+  if (document.getElementById('notifEnabled').checked && Notification.permission === 'granted') {
+    new Notification('ZAMAN — Pomodoro', {
+      body: msg,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏱</text></svg>'
+    });
+  }
+}
+
+function requestNotifPerm() {
+  if (document.getElementById('notifEnabled').checked) {
+    Notification.requestPermission();
+  }
+}
+
+// ============================================================
+// FOCUS MODE
+// ============================================================
+let focusModeActive = false;
+
+function toggleFocusMode() {
+  focusModeActive = !focusModeActive;
+  document.getElementById('focusOverlay').classList.toggle('active', focusModeActive);
+  const task = document.getElementById('currentTask').value || 'DIQQAT REJIMI';
+  document.getElementById('focusTaskLabel').textContent = task.toUpperCase();
+}
+
+function exitFocusMode() {
+  focusModeActive = false;
+  document.getElementById('focusOverlay').classList.remove('active');
+}
+
+// ============================================================
+// TODO LIST
+// ============================================================
+function getTodos() {
+  const raw = localStorage.getItem('zaman_todos');
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveTodos(todos) {
+  localStorage.setItem('zaman_todos', JSON.stringify(todos));
+}
+
+function renderTodos() {
+  const todos = getTodos();
+  const list = document.getElementById('todoList');
+  list.innerHTML = '';
+  const done = todos.filter(t => t.done).length;
+  document.getElementById('todoProgress').textContent = done + '/' + todos.length;
+
+  todos.forEach((todo, idx) => {
+    const item = document.createElement('div');
+    item.className = 'todo-item' + (todo.active ? ' active-task' : '') + (todo.done ? ' done-task' : '');
+
+    item.innerHTML = `
+      <div class="todo-check" onclick="toggleTodo(${idx})">${todo.done ? '✓' : ''}</div>
+      <div class="todo-text" onclick="setActiveTodo(${idx})">${todo.text}</div>
+      <div class="todo-pomos" title="Sarflangan pomodorolars">🍅${todo.pomos || 0}</div>
+      <button class="todo-del" onclick="deleteTodo(${idx})">✕</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function addTodo() {
+  const input = document.getElementById('newTodoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const todos = getTodos();
+  todos.push({ text, done: false, active: false, pomos: 0 });
+  saveTodos(todos);
+  input.value = '';
+  renderTodos();
+}
+
+function toggleTodo(idx) {
+  const todos = getTodos();
+  todos[idx].done = !todos[idx].done;
+  saveTodos(todos);
+  renderTodos();
+}
+
+function setActiveTodo(idx) {
+  const todos = getTodos();
+  todos.forEach((t, i) => t.active = i === idx);
+  saveTodos(todos);
+  document.getElementById('currentTask').value = todos[idx].text;
+  document.getElementById('focusTaskLabel').textContent = todos[idx].text.toUpperCase();
+  renderTodos();
+}
+
+function deleteTodo(idx) {
+  const todos = getTodos();
+  todos.splice(idx, 1);
+  saveTodos(todos);
+  renderTodos();
+}
+
+// After each pomodoro, increment active todo's count
+function incrementActiveTodoPomo() {
+  const todos = getTodos();
+  const active = todos.find(t => t.active && !t.done);
+  if (active) {
+    active.pomos = (active.pomos || 0) + 1;
+    saveTodos(todos);
+    renderTodos();
+  }
+}
+
+// ============================================================
+// WAKE LOCK
+// ============================================================
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) {}
+}
+
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+// ============================================================
+// VISIBILITY CHANGE — recalculate time when user comes back
+// ============================================================
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.running && state.startedAt) {
+    // Recalculate accurate timeLeft
+    const elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
+    const savedTimeLeft = parseInt(localStorage.getItem('zaman_tl') || state.timeLeft);
+    // We save timeLeft + timestamp approach
+    // More accurate: load fresh
+    const raw = localStorage.getItem('zaman_state');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved.running && saved.startedAt) {
+        const elapsedSince = Math.floor((Date.now() - saved.startedAt) / 1000);
+        state.timeLeft = Math.max(0, saved.timeLeft - elapsedSince);
+        if (state.timeLeft === 0) {
+          handleSessionEnd(false);
+        } else {
+          updateDisplay();
+        }
+      }
+    }
+  }
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); toggleTimer(); }
+  if (e.code === 'KeyR') resetTimer();
+  if (e.code === 'KeyF') toggleFocusMode();
+  if (e.code === 'Digit1') switchMode('work');
+  if (e.code === 'Digit2') switchMode('short');
+  if (e.code === 'Digit3') switchMode('long');
+  if (e.code === 'Escape') exitFocusMode();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  drawTickMarks();
+
+  // Load state from localStorage
+  loadState();
+
+  // If no state, set defaults
+  if (!state.timeLeft) {
+    state.timeLeft = getModeTime('work');
+    state.totalTime = state.timeLeft;
+    state.mode = 'work';
+  }
+
+  updateModeUI();
+  updateDisplay();
+  updateStats();
+  renderTodos();
+
+  // Request notification permission
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Auto-save every 5 seconds when running
+  setInterval(() => {
+    if (state.running) saveState();
+  }, 5000);
+})();
+
+
+// ============================================================
+// FIREBASE AUTH & CLOUD SYNC
+// ============================================================
+const FREE_POMODOROS = 3;
+let currentUser = null;
+let guestPomos = parseInt(localStorage.getItem('zaman_guest_pomos') || '0');
+
+function checkAuthWall() {
+  // If logged in, never show wall
+  if (currentUser) return;
+  // Show wall after FREE_POMODOROS guest sessions
+  if (guestPomos >= FREE_POMODOROS) {
+    showAuthWall();
+  }
+}
+
+function showAuthWall() {
+  document.getElementById('authPomosLeft').textContent = FREE_POMODOROS;
+  document.getElementById('authWall').classList.add('visible');
+}
+
+function hideAuthWall() {
+  document.getElementById('authWall').classList.remove('visible');
+}
+
+function skipAuth() {
+  // Allow skipping but timer won't start again until login
+  hideAuthWall();
+  notify('⚠️ Cheklangan rejim — login qiling to\'liq ishlatish uchun');
+}
+
+async function firebaseLogin() {
+  const btn = document.getElementById('googleLoginBtn');
+  btn.textContent = 'Kirish...';
+  btn.disabled = true;
+  try {
+    const fb = window._fb;
+    if (!fb) { alert('Firebase yuklanmadi. Sahifani yangilang.'); return; }
+    const result = await fb.signInWithPopup(fb.auth, fb.provider);
+    // onAuthStateChanged will handle the rest
+  } catch(e) {
+    console.error(e);
+    btn.innerHTML = `<span style="color:#ff4d2e">Xato: ${e.message}</span>`;
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.innerHTML = '🔑 Google bilan kirish';
+      btn.disabled = false;
+    }, 3000);
+  }
+}
+
+async function firebaseLogout() {
+  const fb = window._fb;
+  if (!fb) return;
+  await fb.signOut(fb.auth);
+  currentUser = null;
+  updateUserUI(null);
+  notify('👋 Chiqildi');
+}
+
+function showProfile() {
+  if (!currentUser) return;
+  alert(`👤 ${currentUser.displayName}
+📧 ${currentUser.email}
+🍅 Jami pomodorolar: ${getAnalytics()[getTodayKey()] || 0} (bugun)`);
+}
+
+function updateUserUI(user) {
+  const slot = document.getElementById('headerUserSlot');
+  const chipWrap = document.getElementById('userChipWrap');
+  if (user) {
+    // Move the user chip into header
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    document.getElementById('userName').textContent = user.displayName?.split(' ')[0] || 'Foydalanuvchi';
+    chipWrap.style.display = 'block';
+    slot.appendChild(chipWrap);
+    hideAuthWall();
+  } else {
+    chipWrap.style.display = 'none';
+    slot.innerHTML = '';
+  }
+}
+
+// Cloud sync helpers
+async function cloudSaveAnalytics() {
+  if (!currentUser || !window._fb) return;
+  const fb = window._fb;
+  setSyncDot('syncing');
+  try {
+    const analytics = getAnalytics();
+    const todos = getTodos();
+    const ref = fb.doc(fb.db, 'users', currentUser.uid);
+    await fb.setDoc(ref, {
+      analytics,
+      todos,
+      settings: state.settings,
+      updatedAt: Date.now(),
+      displayName: currentUser.displayName,
+      email: currentUser.email
+    }, { merge: true });
+    setSyncDot('ok');
+  } catch(e) {
+    console.warn('Sync failed', e);
+    setSyncDot('ok');
+  }
+}
+
+async function cloudLoadData() {
+  if (!currentUser || !window._fb) return;
+  const fb = window._fb;
+  setSyncDot('syncing');
+  try {
+    const ref = fb.doc(fb.db, 'users', currentUser.uid);
+    const snap = await fb.getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      // Merge analytics (take max of each day)
+      if (data.analytics) {
+        const local = getAnalytics();
+        const merged = { ...data.analytics };
+        Object.keys(local).forEach(k => {
+          merged[k] = Math.max(merged[k] || 0, local[k] || 0);
+        });
+        localStorage.setItem('zaman_analytics', JSON.stringify(merged));
+      }
+      // Restore todos if local is empty
+      if (data.todos && getTodos().length === 0) {
+        saveTodos(data.todos);
+      }
+      // Restore settings
+      if (data.settings) {
+        state.settings = { ...state.settings, ...data.settings };
+        document.getElementById('setWork').value = state.settings.work;
+        document.getElementById('setShort').value = state.settings.short;
+        document.getElementById('setLong').value = state.settings.long;
+      }
+      updateStats();
+      renderTodos();
+    }
+    setSyncDot('ok');
+    notify('☁️ Ma\'lumotlar yuklandi');
+  } catch(e) {
+    console.warn('Cloud load failed', e);
+    setSyncDot('ok');
+  }
+}
+
+function setSyncDot(status) {
+  const dot = document.getElementById('syncDot');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : '');
+  dot.title = status === 'syncing' ? 'Sinxronlanmoqda...' : 'Cloud bilan sinxron ✓';
+}
+
+// Wait for Firebase to be ready then set up auth listener
+function initFirebaseAuth() {
+  if (!window._fb) {
+    setTimeout(initFirebaseAuth, 200);
+    return;
+  }
+  window._fb.onAuthStateChanged(window._fb.auth, async (user) => {
+    currentUser = user;
+    updateUserUI(user);
+    if (user) {
+      guestPomos = 0;
+      localStorage.removeItem('zaman_guest_pomos');
+      hideAuthWall();
+      await cloudLoadData();
+      // Auto-sync every 2 minutes
+      setInterval(cloudSaveAnalytics, 120000);
+    } else {
+      checkAuthWall();
+    }
+  });
+}
+
+// Override recordPomodoro to track guest sessions & sync
+const _origRecordPomodoro = recordPomodoro;
+window.recordPomodoro = function() {
+  _origRecordPomodoro();
+  if (!currentUser) {
+    guestPomos++;
+    localStorage.setItem('zaman_guest_pomos', guestPomos);
+    checkAuthWall();
+  } else {
+    // Debounced cloud save
+    clearTimeout(window._syncTimer);
+    window._syncTimer = setTimeout(cloudSaveAnalytics, 3000);
+  }
+};
+// Also patch the direct call in handleSessionEnd
+const _origHandleSessionEnd = handleSessionEnd;
+
+
+// Init Firebase auth
+initFirebaseAuth();
+
+</script>
+
+</body>
+</html>
