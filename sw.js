@@ -1,8 +1,20 @@
-const CACHE = 'tikitak-v1';
+const CACHE = 'tikitak-v2';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/css/style.css',
+  '/js/i18n.js',
+  '/js/state.js',
+  '/js/audio.js',
+  '/js/weather.js',
+  '/js/ramadan.js',
+  '/js/timer.js',
+  '/js/ui.js',
+  '/js/sync.js',
+  '/js/auth.js',
+  '/js/init.js',
+  '/config.js',
   'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap',
 ];
 
