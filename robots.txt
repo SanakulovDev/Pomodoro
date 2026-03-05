@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://time.jprq.live/sitemap.xml
+Sitemap: https://tikitak.uz/sitemap.xml
