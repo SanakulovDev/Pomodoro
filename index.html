@@ -2,8 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TIKITAK — Pomodoro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+<!-- ===== SEO (static, no domain) ===== -->
+<title>TIKITAK — Pomodoro Timer | Focus Timer, Ramadan Countdown</title>
+<meta name="description" content="TIKITAK — free Pomodoro timer with live weather background and Ramadan Suhoor/Iftar countdown. Focus better, work in 25-minute sessions. Available in English, Russian and Uzbek.">
+<meta name="keywords" content="tikitak, pomodoro, pomodoro timer, focus timer, pomodoro uz, ramazon taymer, work timer, productivity, pomodoro online, tikitak timer, 25 minute timer, sahar iftar countdown">
+<meta name="robots" content="index, follow">
+<meta name="author" content="TIKITAK">
+
+<!-- Domain-dependent meta injected by config.js -->
+<script src="/config.js"></script>
+<script>
+(function(){
+  const u = typeof SITE_URL!=='undefined' ? SITE_URL : '';
+  const img = u+'/icons/icon-512.png';
+  function meta(k,v,prop){
+    const m=document.createElement('meta');
+    m.setAttribute(prop?'property':'name',k);m.content=v;
+    document.head.appendChild(m);
+  }
+  const l=document.createElement('link');l.rel='canonical';l.href=u+'/';document.head.appendChild(l);
+  meta('og:url',u+'/','og'); meta('og:image',img,'og'); meta('twitter:image',img);
+  const ld=document.createElement('script');ld.type='application/ld+json';
+  ld.text=JSON.stringify({"@context":"https://schema.org","@type":"WebApplication",
+    name:"TIKITAK",url:u+'/',applicationCategory:"UtilitiesApplication",operatingSystem:"Any",
+    offers:{"@type":"Offer",price:"0",priceCurrency:"USD"},screenshot:img,
+    featureList:["Pomodoro Timer","Ramadan Countdown","Live Weather","EN/RU/UZ","PWA"],
+    inLanguage:["en","ru","uz"],creator:{"@type":"Organization",name:"TIKITAK"}});
+  document.head.appendChild(ld);
+})();
+</script>
+
+<!-- ===== Open Graph (Facebook, WhatsApp, Telegram) ===== -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://time.jprq.live/">
+<meta property="og:title" content="TIKITAK — Pomodoro Timer | Focus & Ramadan Countdown">
+<meta property="og:description" content="Free Pomodoro focus timer with live weather and Ramadan Suhoor/Iftar countdown. Works in English, Russian, Uzbek.">
+<meta property="og:image" content="https://time.jprq.live/icons/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="uz_UZ">
+<meta property="og:site_name" content="TIKITAK">
+
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TIKITAK — Pomodoro Timer">
+<meta name="twitter:description" content="Free Pomodoro focus timer with Ramadan countdown. EN / RU / UZ.">
+
+
+
+<!-- ===== PWA ===== -->
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<!-- iOS Standalone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TIKITAK">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <!-- Firebase -->
 <script type="module">
@@ -49,6 +109,18 @@ body {
   background: var(--bg);
   color: var(--text);
   position: relative;
+  /* iOS safe area */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* iOS standalone fake fullscreen */
+.ios-fullscreen .app-container {
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999;
+  overflow: hidden;
 }
 
 /* ===== WEATHER BACKGROUND ===== */
@@ -644,7 +716,7 @@ let state = {
   sessionCount:0, pomodoroNumber:1, targetEndTime:null,
   settings:{ work:25, short:5, long:15, autoSwitch:true }
 };
-let tickInterval = null, wakeLock = null;
+let tickInterval = null;
 
 // ============================================================
 // PERSISTENCE
@@ -980,24 +1052,69 @@ function notify(msg){
 }
 
 // ============================================================
-// WAKE LOCK
+// WAKE LOCK — always keep screen on while app is visible
 // ============================================================
-async function requestWakeLock(){try{if('wakeLock' in navigator) wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
-function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    if (wakeLock) return; // already active
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      wakeLock = null;
+      // Auto re-request if page is still visible
+      if (!document.hidden) setTimeout(requestWakeLock, 1000);
+    });
+  } catch(e) {}
+}
+
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  clearTimeout(_wakeLockTimer);
+}
+
+// Always request when page becomes visible
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) requestWakeLock();
+});
+
+// Request immediately on load
+requestWakeLock();
 
 // ============================================================
 // FULLSCREEN
 // ============================================================
+// Detect iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.navigator.standalone === true;
+
+let iosFakeFullscreen = false;
+
 function toggleFullscreen() {
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen();
+  const btn = document.getElementById('fullscreenBtn');
+  if (isIOS) {
+    // iOS doesn't support Fullscreen API — use CSS fake fullscreen
+    iosFakeFullscreen = !iosFakeFullscreen;
+    document.body.classList.toggle('ios-fullscreen', iosFakeFullscreen);
+    btn.textContent = iosFakeFullscreen ? '✕' : '⛶';
+    if (iosFakeFullscreen) requestWakeLock();
+    else if (!state.running) releaseWakeLock();
+  } else {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen();
+  }
 }
+
 document.addEventListener('fullscreenchange',()=>{
   document.getElementById('fullscreenBtn').textContent=document.fullscreenElement?'✕':'⛶';
   // Keep screen on in fullscreen
   if(document.fullscreenElement) requestWakeLock();
   else if(!state.running) releaseWakeLock();
 });
+
+// If opened as PWA (standalone), auto wake lock
+if (isStandalone) { window.addEventListener('load', ()=>requestWakeLock()); }
 
 // ============================================================
 // VISIBILITY — recalculate on return
@@ -1144,6 +1261,15 @@ window.recordPomodoro=function(){
   // Firebase
   initFirebaseAuth();
 })();
+
+// ============================================================
+// SERVICE WORKER (PWA)
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
