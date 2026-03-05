@@ -35,6 +35,9 @@ function updateModeUI() {
   document.getElementById('timeDisplay').style.color = colors[state.mode];
   document.getElementById('progressArc').style.stroke = colors[state.mode];
   document.getElementById('statusBar').className = 'status-bar ' + state.mode;
+  const cw = document.getElementById('clockWrap');
+  cw.classList.remove('mode-work','mode-short','mode-long');
+  cw.classList.add('mode-' + state.mode);
   updateSessionDots();
 }
 
