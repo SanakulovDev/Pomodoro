@@ -2,6 +2,24 @@
 // weather.js — Live weather fetch and background rendering
 // ============================================================
 let currentWeather = 'clear';
+let _userInteracted = false;
+
+// Browsers block AudioContext until user gesture — unlock on first interaction
+function _unlockAudio() {
+  if (_userInteracted) return;
+  _userInteracted = true;
+  // Resume suspended AudioContext if exists
+  if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  // Start rain audio now if it's currently raining but audio wasn't started
+  if (currentWeather === 'rain' && !rainAudioNodes) {
+    startRainAudio();
+  }
+}
+['click', 'touchstart', 'keydown'].forEach(ev =>
+  document.addEventListener(ev, _unlockAudio, { once: false, passive: true })
+);
 
 async function fetchWeather() {
   try {
@@ -32,7 +50,8 @@ function renderWeather() {
       drop.style.opacity = 0.3 + Math.random() * 0.5;
       el.appendChild(drop);
     }
-    startRainAudio();
+    // Only start audio after user interaction (browser autoplay policy)
+    if (_userInteracted) startRainAudio();
   } else if (currentWeather === 'snow') {
     for (let i = 0; i < 50; i++) {
       const flake = document.createElement('div'); flake.className = 'snowflake';
@@ -65,3 +84,4 @@ function renderWeather() {
     el.appendChild(sun);
   }
 }
+
