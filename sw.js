@@ -1,4 +1,4 @@
-const CACHE = 'tikitak-v3';
+const CACHE = 'tikitak-v4';
 const ASSETS = [
   '/',
   '/index.html',
@@ -14,7 +14,6 @@ const ASSETS = [
   '/js/sync.js',
   '/js/auth.js',
   '/js/init.js',
-  '/config.js',
   'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap',
 ];
 
