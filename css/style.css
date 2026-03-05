@@ -354,26 +354,30 @@ body.light header { background:rgba(245,240,232,0.5); }
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  .main-content { flex-direction:column; gap:8px; padding:8px 12px; }
+  .main-content { flex-direction:column; gap:6px; padding:6px 12px; }
+  /* Compact Ramadan */
   .ramadan-card {
     order:-1; min-width:unset; max-width:100%; width:100%;
-    padding:10px 14px; border-radius:6px;
+    padding:8px 12px; border-radius:6px;
+    display:none; /* hidden outside Ramadan */
   }
-  .ramadan-header { margin-bottom:6px; padding-bottom:6px; gap:6px; }
-  .ramadan-icon { font-size:0.9rem; }
-  .ramadan-title { font-size:0.8rem; letter-spacing:2px; }
-  .ramadan-day { font-size:0.45rem; }
-  .ramadan-row { padding:3px 0; }
-  .ramadan-label { font-size:0.5rem; letter-spacing:1px; }
-  .ramadan-time { font-size:1rem; }
-  .ramadan-countdown { margin-top:6px; padding:6px; }
-  .countdown-label { font-size:0.4rem; margin-bottom:2px; }
-  .countdown-time { font-size:1.2rem; letter-spacing:2px; }
-  .clock-wrap { width:min(280px, 72vw); height:min(280px, 72vw); }
+  .ramadan-card.visible { display:flex; flex-wrap:wrap; align-items:center; gap:0 12px; }
+  .ramadan-header { margin-bottom:0; padding-bottom:0; border-bottom:none; gap:4px; width:100%; }
+  .ramadan-icon { font-size:0.75rem; }
+  .ramadan-title { font-size:0.65rem; letter-spacing:2px; }
+  .ramadan-day { font-size:0.4rem; }
+  .ramadan-row { padding:2px 0; flex:1; min-width:80px; border-bottom:none; }
+  .ramadan-label { font-size:0.45rem; letter-spacing:1px; }
+  .ramadan-time { font-size:0.85rem; }
+  .ramadan-countdown { margin-top:0; padding:4px 8px; width:100%; }
+  .countdown-label { font-size:0.35rem; margin-bottom:1px; }
+  .countdown-time { font-size:1rem; letter-spacing:2px; }
+  /* Bigger timer */
+  .clock-wrap { width:min(300px, 78vw); height:min(300px, 78vw); }
   .mode-tab { padding:6px 12px; font-size:0.55rem; }
 }
 @media (max-width: 380px) {
-  .clock-wrap { width:min(260px, 68vw); height:min(260px, 68vw); }
+  .clock-wrap { width:min(280px, 75vw); height:min(280px, 75vw); }
   .time-display { font-size:clamp(2.5rem, 9vw, 4rem); }
 }
 /* Landscape mobile */
