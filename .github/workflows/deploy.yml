@@ -22,9 +22,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/Pomodoro
-            git stash
             git pull origin main
-            git stash pop
 
       - name: Notify Telegram on success
         if: success()
