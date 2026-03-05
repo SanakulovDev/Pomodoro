@@ -354,13 +354,26 @@ body.light header { background:rgba(245,240,232,0.5); }
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  .main-content { flex-direction:column; gap:16px; padding:12px; }
-  .ramadan-card { order:-1; min-width:unset; max-width:100%; width:100%; }
-  .clock-wrap { width:min(260px, 65vw); height:min(260px, 65vw); }
+  .main-content { flex-direction:column; gap:8px; padding:8px 12px; }
+  .ramadan-card {
+    order:-1; min-width:unset; max-width:100%; width:100%;
+    padding:10px 14px; border-radius:6px;
+  }
+  .ramadan-header { margin-bottom:6px; padding-bottom:6px; gap:6px; }
+  .ramadan-icon { font-size:0.9rem; }
+  .ramadan-title { font-size:0.8rem; letter-spacing:2px; }
+  .ramadan-day { font-size:0.45rem; }
+  .ramadan-row { padding:3px 0; }
+  .ramadan-label { font-size:0.5rem; letter-spacing:1px; }
+  .ramadan-time { font-size:1rem; }
+  .ramadan-countdown { margin-top:6px; padding:6px; }
+  .countdown-label { font-size:0.4rem; margin-bottom:2px; }
+  .countdown-time { font-size:1.2rem; letter-spacing:2px; }
+  .clock-wrap { width:min(280px, 72vw); height:min(280px, 72vw); }
   .mode-tab { padding:6px 12px; font-size:0.55rem; }
 }
 @media (max-width: 380px) {
-  .clock-wrap { width:min(220px, 60vw); height:min(220px, 60vw); }
+  .clock-wrap { width:min(260px, 68vw); height:min(260px, 68vw); }
   .time-display { font-size:clamp(2.5rem, 9vw, 4rem); }
 }
 /* Landscape mobile */
@@ -379,7 +392,8 @@ body.light header { background:rgba(245,240,232,0.5); }
     display:flex !important; flex-direction:column; gap:0; order:-1;
     border-radius:4px; margin-right:10px; margin-left:0;
   }
-  .mode-tab { border-right:none !important; border-bottom:1px solid var(--border); padding:8px 10px; font-size:0.45rem; letter-spacing:1px; }
+  .mode-tab { border-right:none !important; border-bottom:1px solid var(--border); padding:10px; font-size:1rem; line-height:1; text-align:center; }
+  .mode-tab span { display:none; }
   .mode-tab:last-child { border-bottom:none; }
   .mode-tab::after { bottom:auto; top:0; left:0; right:auto; width:2px; height:100%; transform:scaleY(0); transform-origin:top; }
   .mode-tab.active::after { transform:scaleY(1); }

@@ -1,4 +1,4 @@
-const CACHE = 'tikitak-v5';
+const CACHE = 'tikitak-v7';
 const ASSETS = [
   '/',
   '/index.html',
