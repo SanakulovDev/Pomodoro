@@ -381,51 +381,54 @@ body.light header { background:rgba(245,240,232,0.5); }
   .time-display { font-size:clamp(2.5rem, 9vw, 4rem); }
 }
 /* Landscape mobile */
-@media (max-height: 500px) and (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 500px) {
   header { padding:2px 12px; }
   .logo { font-size:1rem; letter-spacing:3px; }
   .fullscreen-btn, .theme-toggle { width:26px; height:26px; font-size:0.75rem; }
   #langBtn { font-size:0.5rem !important; }
   .main-content {
-    flex-direction:row; gap:10px; padding:0 10px;
+    flex-direction:row !important; gap:10px; padding:0 10px;
     align-items:center; justify-content:center;
     height:calc(100vh - 30px);
   }
   .timer-section { gap:0; flex:1; display:flex; flex-direction:row; align-items:center; justify-content:center; }
   .mode-tabs {
-    display:flex !important; flex-direction:column; gap:0; order:-1;
+    display:flex !important; flex-direction:column !important; gap:0; order:-1;
     border-radius:4px; margin-right:10px; margin-left:0;
   }
-  .mode-tab { border-right:none !important; border-bottom:1px solid var(--border); padding:10px; font-size:1rem; line-height:1; text-align:center; }
-  .mode-tab span { display:none; }
+  .mode-tab {
+    border-right:none !important; border-bottom:1px solid var(--border);
+    padding:10px !important; font-size:1rem !important; line-height:1; text-align:center;
+  }
+  .mode-tab span { display:none !important; }
   .mode-tab:last-child { border-bottom:none; }
-  .mode-tab::after { bottom:auto; top:0; left:0; right:auto; width:2px; height:100%; transform:scaleY(0); transform-origin:top; }
+  .mode-tab::after { bottom:auto !important; top:0 !important; left:0 !important; right:auto !important; width:2px !important; height:100% !important; transform:scaleY(0); transform-origin:top; }
   .mode-tab.active::after { transform:scaleY(1); }
   .clock-wrap {
-    width:min(260px, 65vh); height:min(260px, 65vh);
+    width:min(260px, 65vh) !important; height:min(260px, 65vh) !important;
   }
   .time-display { font-size:clamp(2.5rem, 12vh, 4.5rem); }
   .time-label { font-size:0.4rem; letter-spacing:2px; }
   .clock-hint { display:none; }
   .mini-controls { display:none; }
   .session-dot { width:4px; height:4px; }
-  /* Ramadan — full size, equal to timer */
+  /* Compact Ramadan in landscape */
   .ramadan-card {
-    flex:1; min-width:unset; max-width:unset;
-    padding:16px 20px;
+    min-width:unset !important; max-width:160px !important;
+    padding:8px 10px !important;
     align-self:stretch;
-    display:flex; flex-direction:column; justify-content:center;
   }
-  .ramadan-header { margin-bottom:8px; padding-bottom:8px; }
-  .ramadan-icon { font-size:1.2rem; }
-  .ramadan-title { font-size:1.1rem; letter-spacing:4px; }
-  .ramadan-day { font-size:0.6rem; letter-spacing:2px; }
-  .ramadan-row { padding:4px 0; }
-  .ramadan-label { font-size:0.55rem; letter-spacing:2px; }
-  .ramadan-time { font-size:1.4rem; }
-  .ramadan-countdown { margin-top:10px; padding:10px; }
-  .countdown-label { font-size:0.5rem; letter-spacing:2px; }
-  .countdown-time { font-size:1.6rem; letter-spacing:3px; }
+  .ramadan-card.visible { display:flex !important; flex-direction:column !important; justify-content:center; }
+  .ramadan-header { margin-bottom:4px !important; padding-bottom:4px !important; gap:4px; }
+  .ramadan-icon { font-size:0.7rem !important; }
+  .ramadan-title { font-size:0.55rem !important; letter-spacing:2px !important; }
+  .ramadan-day { font-size:0.35rem !important; }
+  .ramadan-row { padding:2px 0 !important; border-bottom:none !important; }
+  .ramadan-label { font-size:0.4rem !important; letter-spacing:1px !important; }
+  .ramadan-time { font-size:0.8rem !important; }
+  .ramadan-countdown { margin-top:4px !important; padding:4px !important; }
+  .countdown-label { font-size:0.35rem !important; margin-bottom:1px !important; }
+  .countdown-time { font-size:0.9rem !important; letter-spacing:2px !important; }
 }
 /* Fullscreen */
 :fullscreen { background:transparent; }
