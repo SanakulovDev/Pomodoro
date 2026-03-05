@@ -85,6 +85,7 @@ function resetTimer() {
   state.timeLeft = getModeTime(state.mode); state.totalTime = state.timeLeft; state.targetEndTime = null;
   document.getElementById('clockHint').textContent = t('clickStart');
   updateDisplay(); saveState();
+  syncTimerState();
 }
 
 function skipSession() { if (state.running) stopTimer(); handleSessionEnd(false); }
