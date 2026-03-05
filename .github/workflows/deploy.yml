@@ -11,6 +11,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Update sitemap lastmod date
+        run: sed -i "s|<lastmod>.*</lastmod>|<lastmod>$(date +%Y-%m-%d)</lastmod>|" sitemap.xml
+
       - name: Deploy via rsync over SSH
         uses: easingthemes/ssh-deploy@main
         env:

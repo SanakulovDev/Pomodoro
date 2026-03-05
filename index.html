@@ -11,33 +11,19 @@
 <meta name="robots" content="index, follow">
 <meta name="author" content="TIKITAK">
 
-<!-- Domain-dependent meta injected by config.js -->
-<script src="/config.js"></script>
-<script>
-(function(){
-  const u = typeof SITE_URL!=='undefined' ? SITE_URL : '';
-  const img = u+'/icons/icon-512.png';
-  function meta(k,v,prop){
-    const m=document.createElement('meta');
-    m.setAttribute(prop?'property':'name',k);m.content=v;
-    document.head.appendChild(m);
-  }
-  const l=document.createElement('link');l.rel='canonical';l.href=u+'/';document.head.appendChild(l);
-  meta('og:url',u+'/','og'); meta('og:image',img,'og'); meta('twitter:image',img);
-  const ld=document.createElement('script');ld.type='application/ld+json';
-  ld.text=JSON.stringify({"@context":"https://schema.org","@type":"WebApplication",
-    name:"TIKITAK",url:u+'/',applicationCategory:"UtilitiesApplication",operatingSystem:"Any",
-    offers:{"@type":"Offer",price:"0",priceCurrency:"USD"},screenshot:img,
-    featureList:["Pomodoro Timer","Ramadan Countdown","Live Weather","EN/RU/UZ","PWA"],
-    inLanguage:["en","ru","uz"],creator:{"@type":"Organization",name:"TIKITAK"}});
-  document.head.appendChild(ld);
-})();
-</script>
+<!-- ===== Canonical & hreflang ===== -->
+<link rel="canonical" href="https://tikitak.uz/">
+<link rel="alternate" hreflang="en" href="https://tikitak.uz/">
+<link rel="alternate" hreflang="ru" href="https://tikitak.uz/">
+<link rel="alternate" hreflang="uz" href="https://tikitak.uz/">
+<link rel="alternate" hreflang="x-default" href="https://tikitak.uz/">
 
-<!-- ===== Open Graph (static parts) ===== -->
+<!-- ===== Open Graph ===== -->
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://tikitak.uz/">
 <meta property="og:title" content="TIKITAK — Pomodoro Timer | Focus &amp; Ramadan Countdown">
 <meta property="og:description" content="Free Pomodoro focus timer with live weather and Ramadan Suhoor/Iftar countdown. Works in English, Russian, Uzbek.">
+<meta property="og:image" content="https://tikitak.uz/icons/icon-512.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta property="og:locale" content="en_US">
@@ -45,10 +31,17 @@
 <meta property="og:locale:alternate" content="uz_UZ">
 <meta property="og:site_name" content="TIKITAK">
 
-<!-- ===== Twitter Card (static parts) ===== -->
-<meta name="twitter:card" content="summary">
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="TIKITAK — Pomodoro Timer">
 <meta name="twitter:description" content="Free Pomodoro focus timer with Ramadan countdown. EN / RU / UZ.">
+<meta name="twitter:image" content="https://tikitak.uz/icons/icon-512.png">
+
+<!-- ===== JSON-LD Structured Data ===== -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"TIKITAK","url":"https://tikitak.uz/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"screenshot":"https://tikitak.uz/icons/icon-512.png","featureList":["Pomodoro Timer","Ramadan Countdown","Live Weather","EN/RU/UZ","PWA"],"inLanguage":["en","ru","uz"],"creator":{"@type":"Organization","name":"TIKITAK"}}
+</script>
+
 
 <!-- ===== PWA ===== -->
 <meta name="theme-color" content="#0a0a0f">
