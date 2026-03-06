@@ -65,6 +65,20 @@
 <body>
 
 <div id="weatherBg"><div id="weatherElements"></div></div>
+<div class="weather-panel clear day" id="weatherPanel" aria-live="polite">
+  <div class="weather-panel-kicker" id="weatherKicker">CURRENT WEATHER</div>
+  <div class="weather-panel-main">
+    <div class="weather-panel-icon" id="weatherIcon">☀️</div>
+    <div class="weather-panel-copy">
+      <div class="weather-panel-label" id="weatherLabel">Clear sky</div>
+      <div class="weather-panel-meta">
+        <span id="weatherTemp">--°</span>
+        <span class="weather-panel-sep">•</span>
+        <span id="weatherLocation">Tashkent</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="status-bar work" id="statusBar"></div>
 <div class="notification" id="notification"></div>

@@ -25,6 +25,14 @@ const I18N = {
     cloudLoaded: '☁️ Data loaded',
     signingIn: 'Signing in...',
     signIn: 'Sign In',
+    weatherNow: 'CURRENT WEATHER',
+    weatherClear: 'Clear sky',
+    weatherCloudy: 'Cloudy',
+    weatherRain: 'Rain',
+    weatherSnow: 'Snow',
+    weatherFog: 'Fog',
+    weatherStorm: 'Thunderstorm',
+    weatherLocation: 'Tashkent',
   },
   uz: {
     authSub: 'Pomodoro taymer',
@@ -49,6 +57,14 @@ const I18N = {
     cloudLoaded: '☁️ Ma\'lumotlar yuklandi',
     signingIn: 'Kirish...',
     signIn: 'Kirish',
+    weatherNow: 'HOZIRGI OB-HAVO',
+    weatherClear: 'Ochiq osmon',
+    weatherCloudy: 'Bulutli',
+    weatherRain: 'Yomg\'ir',
+    weatherSnow: 'Qor',
+    weatherFog: 'Tuman',
+    weatherStorm: 'Momaqaldiroq',
+    weatherLocation: 'Toshkent',
   },
   ru: {
     authSub: 'Помодоро таймер',
@@ -73,6 +89,14 @@ const I18N = {
     cloudLoaded: '☁️ Данные загружены',
     signingIn: 'Вход...',
     signIn: 'Войти',
+    weatherNow: 'ПОГОДА СЕЙЧАС',
+    weatherClear: 'Ясно',
+    weatherCloudy: 'Облачно',
+    weatherRain: 'Дождь',
+    weatherSnow: 'Снег',
+    weatherFog: 'Туман',
+    weatherStorm: 'Гроза',
+    weatherLocation: 'Ташкент',
   }
 };
 
@@ -89,6 +113,7 @@ function applyLang() {
     const labels = { work: t('workTime'), short: t('shortTime'), long: t('longTime') };
     document.getElementById('modeLabel').textContent = labels[state.mode];
   }
+  if (typeof updateWeatherBadge === 'function') updateWeatherBadge();
 }
 
 function toggleLang() {
