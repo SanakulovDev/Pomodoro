@@ -12,6 +12,10 @@
   setInterval(() => { if (state.running) saveState(); }, 5000);
   // Weather
   fetchWeather(); setInterval(fetchWeather, 1800000);
+  // Contextual visuals
+  updateContextScene(); setInterval(updateContextScene, 60000);
+  // Daily quote
+  updateDailyQuote(); setInterval(updateDailyQuote, 3600000);
   // Ramadan
   updateRamadan(); setInterval(updateRamadan, 1000);
   // Theme
@@ -26,4 +30,3 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
-

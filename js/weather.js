@@ -195,4 +195,5 @@ function renderWeather() {
     }
   }
   updateWeatherBadge();
+  if (typeof updateContextScene === 'function') updateContextScene();
 }

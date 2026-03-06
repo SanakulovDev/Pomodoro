@@ -39,6 +39,59 @@ body {
   overflow: hidden;
   transition: background 3s;
 }
+#contextGlow {
+  position:fixed; inset:-10%; z-index:0;
+  pointer-events:none;
+  opacity:0.9;
+  transition:opacity 0.6s, filter 0.6s;
+}
+#contextGlow::before,
+#contextGlow::after {
+  content:'';
+  position:absolute;
+  border-radius:50%;
+  filter:blur(36px);
+  transition:background 0.8s, transform 0.8s, opacity 0.8s;
+}
+#contextGlow::before {
+  width:42vw; height:42vw; max-width:420px; max-height:420px;
+  top:12%; left:-4%;
+}
+#contextGlow::after {
+  width:30vw; height:30vw; max-width:300px; max-height:300px;
+  right:2%; bottom:10%;
+}
+body.context-morning #contextGlow::before {
+  background:radial-gradient(circle, rgba(255,158,94,0.34), transparent 68%);
+  transform:translate3d(0, 0, 0);
+}
+body.context-morning #contextGlow::after {
+  background:radial-gradient(circle, rgba(255,220,143,0.18), transparent 70%);
+}
+body.context-day #contextGlow::before {
+  background:radial-gradient(circle, rgba(255,215,110,0.2), transparent 68%);
+}
+body.context-day #contextGlow::after {
+  background:radial-gradient(circle, rgba(109,204,255,0.16), transparent 72%);
+}
+body.context-evening #contextGlow::before {
+  background:radial-gradient(circle, rgba(255,126,84,0.28), transparent 66%);
+}
+body.context-evening #contextGlow::after {
+  background:radial-gradient(circle, rgba(255,194,107,0.14), transparent 74%);
+}
+body.context-night #contextGlow::before {
+  background:radial-gradient(circle, rgba(92,142,255,0.22), transparent 66%);
+}
+body.context-night #contextGlow::after {
+  background:radial-gradient(circle, rgba(109,89,255,0.12), transparent 74%);
+}
+body.context-weekend #contextGlow {
+  filter:saturate(1.12);
+}
+body.context-weekend #contextGlow::after {
+  box-shadow:0 0 70px rgba(124,240,197,0.1);
+}
 #weatherElements {
   position:absolute; inset:0;
 }
@@ -264,6 +317,51 @@ body {
 .ios-fullscreen .weather-panel {
   z-index:10001;
 }
+.context-card {
+  position:fixed; top:72px; right:18px; z-index:4;
+  width:min(250px, calc(100vw - 36px));
+  padding:14px 15px;
+  border-radius:14px;
+  background:rgba(9,12,20,0.42);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 16px 40px rgba(0,0,0,0.16);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.context-card-top {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  margin-bottom:10px;
+}
+.context-pill,
+.context-weather {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 8px;
+  border-radius:999px;
+  font-size:0.48rem;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+}
+.context-pill {
+  background:rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.82);
+}
+.context-weather {
+  background:rgba(255,255,255,0.04);
+  color:rgba(232,232,240,0.68);
+}
+.context-title {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.5rem;
+  letter-spacing:3px;
+  line-height:1;
+  color:var(--text);
+}
+.context-subtitle {
+  margin-top:8px;
+  font-size:0.6rem;
+  line-height:1.65;
+  color:rgba(232,232,240,0.72);
+}
 .weather-panel.clear.day { border-color:rgba(255,196,77,0.35); }
 .weather-panel.clear.night { border-color:rgba(147,197,253,0.25); }
 .weather-panel.cloudy { border-color:rgba(226,232,240,0.22); }
@@ -354,10 +452,18 @@ header {
   flex:1; display:flex; align-items:center; justify-content:center;
   padding: 20px; gap: 30px; overflow-y: auto;
 }
+.side-stack {
+  display:flex; flex-direction:column; gap:14px;
+  width:min(280px, 100%);
+  flex:0 0 auto;
+}
 
 /* Timer Section */
 .timer-section {
   display:flex; flex-direction:column; align-items:center; gap:14px;
+}
+.timer-core {
+  display:flex; flex-direction:column; align-items:center; gap:10px;
 }
 .mode-tabs {
   display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden;
@@ -438,6 +544,32 @@ header {
   backdrop-filter:blur(8px);
 }
 .mini-btn:hover { color:var(--text); border-color:var(--muted); }
+.daily-quote {
+  width:100%;
+  min-height:66px;
+  padding:10px 14px;
+  border-radius:12px;
+  background:rgba(8, 11, 18, 0.42);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 14px 30px rgba(0,0,0,0.14);
+  text-align:center;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.daily-quote-text {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.05rem;
+  letter-spacing:1.7px;
+  line-height:1.15;
+  color:var(--text);
+}
+.daily-quote-author {
+  margin-top:7px;
+  font-size:0.5rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(232,232,240,0.58);
+}
 
 /* Pulse when running */
 @keyframes ringPulseWork {
@@ -546,11 +678,46 @@ header {
 body.light { --bg:#f5f0e8; --surface:rgba(255,254,249,0.85); --border:#e0d8cc; --accent:#e63b1f; --accent2:#e08c00; --accent3:#00a878; --text:#1a1a2e; --muted:#8a8070; --work:#e63b1f; --short:#00a878; --long:#1a6fbd; }
 body.light .auth-wall { background:rgba(245,240,232,0.97); }
 body.light header { background:rgba(245,240,232,0.5); }
+body.context-morning { --accent:#ff7a3d; --accent2:#ffc36b; }
+body.context-day { --accent:#ff5a3d; --accent2:#ffd166; }
+body.context-evening { --accent:#ff7b54; --accent2:#ffb36b; }
+body.context-night { --accent:#5ea7ff; --accent2:#8cc8ff; }
+body.context-weekend { --accent3:#7cf0c5; }
+body.light.context-morning { --accent:#f06a2c; --accent2:#d99a2a; }
+body.light.context-day { --accent:#e65a22; --accent2:#d89e10; }
+body.light.context-evening { --accent:#cf6438; --accent2:#c98a3b; }
+body.light.context-night { --accent:#2d6cdf; --accent2:#7ba6f2; }
+body.light .context-card {
+  background:rgba(255,252,246,0.68);
+  border-color:rgba(208,190,166,0.4);
+}
+body.light .context-pill {
+  background:rgba(26,26,46,0.06);
+  color:rgba(26,26,46,0.72);
+}
+body.light .context-weather,
+body.light .context-subtitle {
+  color:rgba(26,26,46,0.62);
+}
+body.light .daily-quote {
+  background:rgba(255,252,246,0.72);
+  border-color:rgba(208,190,166,0.38);
+}
+body.light .daily-quote-author {
+  color:rgba(26,26,46,0.56);
+}
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
   .weather-panel {
     display:none;
+  }
+  .context-card {
+    display:none;
+  }
+  .side-stack {
+    width:100%;
+    gap:8px;
   }
   .weather-panel-icon { width:34px; height:34px; font-size:1.05rem; }
   .weather-panel-label { font-size:0.9rem; }
@@ -577,15 +744,33 @@ body.light header { background:rgba(245,240,232,0.5); }
   /* Bigger timer */
   .clock-wrap { width:min(300px, 78vw); height:min(300px, 78vw); }
   .mode-tab { padding:6px 12px; font-size:0.55rem; }
+  .timer-core { gap:8px; }
+  .daily-quote {
+    min-height:58px;
+    padding:9px 12px;
+    border-radius:10px;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  .daily-quote-text { font-size:0.9rem; letter-spacing:1.3px; }
+  .daily-quote-author { margin-top:5px; font-size:0.44rem; letter-spacing:1.6px; }
 }
 @media (max-width: 380px) {
   .clock-wrap { width:min(280px, 75vw); height:min(280px, 75vw); }
   .time-display { font-size:clamp(2.5rem, 9vw, 4rem); }
+  .daily-quote-text { font-size:0.82rem; }
 }
 /* Landscape mobile */
 @media (orientation: landscape) and (max-height: 500px) {
   .weather-panel {
     display:none;
+  }
+  .context-card {
+    display:none;
+  }
+  .side-stack {
+    gap:6px;
+    width:clamp(156px, 28vw, 188px);
   }
   .weather-panel-icon { width:30px; height:30px; font-size:0.95rem; border-radius:8px; }
   .weather-panel-kicker { font-size:0.38rem; letter-spacing:1.5px; margin-bottom:4px; }
@@ -603,6 +788,9 @@ body.light header { background:rgba(245,240,232,0.5); }
   .timer-section {
     gap:6px; flex:0 1 auto; min-width:0;
     display:flex; flex-direction:row; align-items:center; justify-content:flex-start;
+  }
+  .timer-core {
+    gap:4px;
   }
   .mode-tabs {
     display:flex !important; flex-direction:column !important; gap:0; order:1;
@@ -624,6 +812,13 @@ body.light header { background:rgba(245,240,232,0.5); }
   .clock-hint { display:none; }
   .mini-controls { display:none; }
   .session-dot { width:4px; height:4px; }
+  .daily-quote {
+    min-height:46px;
+    padding:7px 9px;
+    border-radius:9px;
+  }
+  .daily-quote-text { font-size:0.72rem; letter-spacing:1px; }
+  .daily-quote-author { margin-top:4px; font-size:0.38rem; letter-spacing:1.4px; }
   /* Compact Ramadan in landscape */
   .ramadan-card {
     min-width:unset !important;

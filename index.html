@@ -57,14 +57,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <!-- ===== CSS ===== -->
-<link rel="stylesheet" href="/css/style.css?v=20260306-1">
+<link rel="stylesheet" href="/css/style.css?v=20260306-7">
 
 <!-- ===== Firebase (module) ===== -->
-<script type="module" src="/js/firebase.js?v=20260306-1"></script>
+<script type="module" src="/js/firebase.js?v=20260306-7"></script>
 </head>
 <body>
 
 <div id="weatherBg"><div id="weatherElements"></div></div>
+<div id="contextGlow" aria-hidden="true"></div>
 <div class="weather-panel clear day" id="weatherPanel" aria-live="polite">
   <div class="weather-panel-kicker" id="weatherKicker">CURRENT WEATHER</div>
   <div class="weather-panel-main">
@@ -78,6 +79,17 @@
       </div>
     </div>
   </div>
+</div>
+<div class="context-card" id="contextCard" aria-live="polite">
+  <div class="context-card-top">
+    <span class="context-pill" id="contextPill">MORNING</span>
+    <span class="context-weather">
+      <span id="contextWeatherIcon">☀️</span>
+      <span id="contextWeatherText">Clear sky</span>
+    </span>
+  </div>
+  <div class="context-title" id="contextTitle">Golden Start</div>
+  <div class="context-subtitle" id="contextSubtitle">Warm light and clean focus for your first session.</div>
 </div>
 
 <div class="status-bar work" id="statusBar"></div>
@@ -113,24 +125,30 @@
   </header>
 
   <div class="main-content">
-    <!-- Ramadan Card -->
-    <div class="ramadan-card" id="ramadanCard">
-      <div class="ramadan-header">
-        <span class="ramadan-icon">🌙</span>
-        <span class="ramadan-title" data-i18n="ramadan">RAMADAN</span>
-        <span class="ramadan-day" id="ramadanDay">DAY 16</span>
+    <div class="side-stack">
+      <!-- Ramadan Card -->
+      <div class="ramadan-card" id="ramadanCard">
+        <div class="ramadan-header">
+          <span class="ramadan-icon">🌙</span>
+          <span class="ramadan-title" data-i18n="ramadan">RAMADAN</span>
+          <span class="ramadan-day" id="ramadanDay">DAY 16</span>
+        </div>
+        <div class="ramadan-row">
+          <span class="ramadan-label">🌅 <span data-i18n="suhoor">Suhoor</span></span>
+          <span class="ramadan-time" id="saharTime">05:34</span>
+        </div>
+        <div class="ramadan-row">
+          <span class="ramadan-label">🌇 <span data-i18n="iftar">Iftar</span></span>
+          <span class="ramadan-time" id="iftorTime">18:22</span>
+        </div>
+        <div class="ramadan-countdown">
+          <div class="countdown-label" id="countdownLabel">UNTIL IFTAR</div>
+          <div class="countdown-time" id="countdownTime">12:37:00</div>
+        </div>
       </div>
-      <div class="ramadan-row">
-        <span class="ramadan-label">🌅 <span data-i18n="suhoor">Suhoor</span></span>
-        <span class="ramadan-time" id="saharTime">05:34</span>
-      </div>
-      <div class="ramadan-row">
-        <span class="ramadan-label">🌇 <span data-i18n="iftar">Iftar</span></span>
-        <span class="ramadan-time" id="iftorTime">18:22</span>
-      </div>
-      <div class="ramadan-countdown">
-        <div class="countdown-label" id="countdownLabel">UNTIL IFTAR</div>
-        <div class="countdown-time" id="countdownTime">12:37:00</div>
+      <div class="daily-quote" id="dailyQuoteCard" aria-live="polite">
+        <div class="daily-quote-text" id="dailyQuoteText" data-i18n="quoteLoading">Loading quote...</div>
+        <div class="daily-quote-author" id="dailyQuoteAuthor" data-i18n="quoteSource">ONLINE SOURCE</div>
       </div>
     </div>
 
@@ -141,23 +159,25 @@
         <button class="mode-tab" data-mode="short" onclick="switchMode('short')">☕ <span data-i18n="shortBreak">BREAK</span></button>
         <button class="mode-tab" data-mode="long" onclick="switchMode('long')">🌙 <span data-i18n="longBreak">LONG BREAK</span></button>
       </div>
-      <div class="clock-wrap" id="clockWrap" onclick="toggleTimer()" tabindex="0" role="button" aria-label="Start timer">
-        <svg class="clock-svg" viewBox="0 0 300 300">
-          <circle class="clock-bg-ring" cx="150" cy="150" r="140"/>
-          <g id="tickMarks"></g>
-          <circle class="clock-progress" id="progressArc" cx="150" cy="150" r="140"
-            stroke="var(--work)" stroke-dasharray="879.6" stroke-dashoffset="0"/>
-        </svg>
-        <div class="clock-center">
-          <div class="time-display" id="timeDisplay">25:00</div>
-          <div class="time-label" id="modeLabel" data-i18n="workTime">WORK TIME</div>
-          <div class="session-indicator" id="sessionDots"></div>
+      <div class="timer-core">
+        <div class="clock-wrap" id="clockWrap" onclick="toggleTimer()" tabindex="0" role="button" aria-label="Start timer">
+          <svg class="clock-svg" viewBox="0 0 300 300">
+            <circle class="clock-bg-ring" cx="150" cy="150" r="140"/>
+            <g id="tickMarks"></g>
+            <circle class="clock-progress" id="progressArc" cx="150" cy="150" r="140"
+              stroke="var(--work)" stroke-dasharray="879.6" stroke-dashoffset="0"/>
+          </svg>
+          <div class="clock-center">
+            <div class="time-display" id="timeDisplay">25:00</div>
+            <div class="time-label" id="modeLabel" data-i18n="workTime">WORK TIME</div>
+            <div class="session-indicator" id="sessionDots"></div>
+          </div>
         </div>
-      </div>
-      <div class="clock-hint" id="clockHint" data-i18n="clickStart">▶ Click to start</div>
-      <div class="mini-controls">
-        <button class="mini-btn" onclick="event.stopPropagation();resetTimer()" title="Reset">↺</button>
-        <button class="mini-btn" onclick="event.stopPropagation();skipSession()" title="Skip">⏭</button>
+        <div class="clock-hint" id="clockHint" data-i18n="clickStart">▶ Click to start</div>
+        <div class="mini-controls">
+          <button class="mini-btn" onclick="event.stopPropagation();resetTimer()" title="Reset">↺</button>
+          <button class="mini-btn" onclick="event.stopPropagation();skipSession()" title="Skip">⏭</button>
+        </div>
       </div>
     </div>
   </div>
@@ -175,16 +195,18 @@
 </div>
 
 <!-- ===== JS modules (dependency order) ===== -->
-<script src="/js/i18n.js?v=20260306-1"></script>
-<script src="/js/state.js?v=20260306-1"></script>
-<script src="/js/audio.js?v=20260306-1"></script>
-<script src="/js/weather.js?v=20260306-1"></script>
-<script src="/js/ramadan.js?v=20260306-1"></script>
-<script src="/js/timer.js?v=20260306-1"></script>
-<script src="/js/ui.js?v=20260306-1"></script>
-<script src="/js/sync.js?v=20260306-1"></script>
-<script src="/js/auth.js?v=20260306-1"></script>
-<script src="/js/init.js?v=20260306-1"></script>
+<script src="/js/i18n.js?v=20260306-7"></script>
+<script src="/js/state.js?v=20260306-7"></script>
+<script src="/js/audio.js?v=20260306-7"></script>
+<script src="/js/weather.js?v=20260306-7"></script>
+<script src="/js/context.js?v=20260306-7"></script>
+<script src="/js/quotes.js?v=20260306-8"></script>
+<script src="/js/ramadan.js?v=20260306-7"></script>
+<script src="/js/timer.js?v=20260306-7"></script>
+<script src="/js/ui.js?v=20260306-7"></script>
+<script src="/js/sync.js?v=20260306-7"></script>
+<script src="/js/auth.js?v=20260306-7"></script>
+<script src="/js/init.js?v=20260306-7"></script>
 
 </body>
 </html>

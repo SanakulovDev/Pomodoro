@@ -33,6 +33,24 @@ const I18N = {
     weatherFog: 'Fog',
     weatherStorm: 'Thunderstorm',
     weatherLocation: 'Tashkent',
+    ctxMorning: 'MORNING',
+    ctxDay: 'DAYLIGHT',
+    ctxEvening: 'EVENING',
+    ctxNight: 'NIGHT',
+    ctxWeekend: 'WEEKEND',
+    ctxMorningTitle: 'Golden Start',
+    ctxMorningSub: 'Warm light and clean focus for your first session.',
+    ctxDayTitle: 'Momentum Window',
+    ctxDaySub: 'Bright energy for deep work and steady progress.',
+    ctxEveningTitle: 'Sunset Flow',
+    ctxEveningSub: 'A calmer scene for wrapping up important sessions.',
+    ctxNightTitle: 'Night Focus',
+    ctxNightSub: 'Quiet ambience for long, uninterrupted work.',
+    ctxWeekendTitle: 'Weekend Flow',
+    ctxWeekendSub: 'A softer scene for planning, reading, and reset sessions.',
+    quoteLoading: 'Loading quote...',
+    quoteUnavailable: 'Quote unavailable.',
+    quoteSource: 'ONLINE SOURCE',
   },
   uz: {
     authSub: 'Pomodoro taymer',
@@ -65,6 +83,24 @@ const I18N = {
     weatherFog: 'Tuman',
     weatherStorm: 'Momaqaldiroq',
     weatherLocation: 'Toshkent',
+    ctxMorning: 'TONG',
+    ctxDay: 'KUNDUZ',
+    ctxEvening: 'KECHQURUN',
+    ctxNight: 'TUN',
+    ctxWeekend: 'DAM KUNI',
+    ctxMorningTitle: 'Yorqin Boshlanish',
+    ctxMorningSub: 'Birinchi sessiyalar uchun iliq yorug\'lik va toza fokus.',
+    ctxDayTitle: 'Kuchli Oqim',
+    ctxDaySub: 'Chuqur ish va barqaror progress uchun yorqin energiya.',
+    ctxEveningTitle: 'Kechki Oqim',
+    ctxEveningSub: 'Muhim sessiyalarni sokin ritmda yakunlash uchun.',
+    ctxNightTitle: 'Tungi Fokus',
+    ctxNightSub: 'Uzoq va bo\'linmas ish uchun sokin atmosfera.',
+    ctxWeekendTitle: 'Dam Olish Oqimi',
+    ctxWeekendSub: 'Reja, o\'qish va yengil sessiyalar uchun yumshoq kayfiyat.',
+    quoteLoading: 'Iqtibos yuklanmoqda...',
+    quoteUnavailable: 'Iqtibos mavjud emas.',
+    quoteSource: 'ONLAYN MANBA',
   },
   ru: {
     authSub: 'Помодоро таймер',
@@ -97,6 +133,24 @@ const I18N = {
     weatherFog: 'Туман',
     weatherStorm: 'Гроза',
     weatherLocation: 'Ташкент',
+    ctxMorning: 'УТРО',
+    ctxDay: 'ДЕНЬ',
+    ctxEvening: 'ВЕЧЕР',
+    ctxNight: 'НОЧЬ',
+    ctxWeekend: 'ВЫХОДНОЙ',
+    ctxMorningTitle: 'Яркий Старт',
+    ctxMorningSub: 'Тёплый свет и чистый фокус для первых сессий.',
+    ctxDayTitle: 'Окно Импульса',
+    ctxDaySub: 'Яркая энергия для глубокой работы и ровного прогресса.',
+    ctxEveningTitle: 'Вечерний Ритм',
+    ctxEveningSub: 'Спокойная сцена для завершения важных сессий.',
+    ctxNightTitle: 'Ночной Фокус',
+    ctxNightSub: 'Тихая атмосфера для долгой и непрерывной работы.',
+    ctxWeekendTitle: 'Выходной Поток',
+    ctxWeekendSub: 'Более мягкая сцена для планирования, чтения и reset-сессий.',
+    quoteLoading: 'Цитата загружается...',
+    quoteUnavailable: 'Цитата недоступна.',
+    quoteSource: 'ОНЛАЙН ИСТОЧНИК',
   }
 };
 
@@ -114,6 +168,8 @@ function applyLang() {
     document.getElementById('modeLabel').textContent = labels[state.mode];
   }
   if (typeof updateWeatherBadge === 'function') updateWeatherBadge();
+  if (typeof updateContextScene === 'function') updateContextScene();
+  if (typeof updateDailyQuote === 'function') updateDailyQuote();
 }
 
 function toggleLang() {

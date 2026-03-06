@@ -81,6 +81,7 @@ function initFirebaseAuth() {
   window._fb.getRedirectResult(window._fb.auth).catch(() => {});
   window._fb.onAuthStateChanged(window._fb.auth, async (user) => {
     currentUser = user; updateUserUI(user);
+    if (typeof updateDailyQuote === 'function') updateDailyQuote();
     if (user) {
       guestPomos = 0; localStorage.removeItem('zaman_guest_pomos'); hideAuthWall();
       await cloudLoadData();
