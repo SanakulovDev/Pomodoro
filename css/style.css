@@ -249,7 +249,8 @@ body {
 
 /* Weather HUD */
 .weather-panel {
-  position:fixed; top:72px; left:18px; z-index:3;
+  position:fixed; top:72px; left:18px; z-index:1001;
+  width:min(220px, calc(100vw - 36px));
   min-width:170px; max-width:220px;
   padding:10px 12px;
   border-radius:12px;
@@ -258,6 +259,9 @@ body {
   box-shadow:0 16px 40px rgba(0,0,0,0.18);
   backdrop-filter:blur(14px);
   pointer-events:none;
+}
+.ios-fullscreen .weather-panel {
+  z-index:10001;
 }
 .weather-panel.clear.day { border-color:rgba(255,196,77,0.35); }
 .weather-panel.clear.night { border-color:rgba(147,197,253,0.25); }
@@ -545,8 +549,10 @@ body.light header { background:rgba(245,240,232,0.5); }
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
   .weather-panel {
-    top:64px; left:12px;
-    min-width:152px; max-width:180px;
+    top:calc(env(safe-area-inset-top) + 58px);
+    left:12px; right:12px;
+    width:auto;
+    min-width:0; max-width:none;
     padding:8px 10px;
     border-radius:10px;
   }
@@ -583,8 +589,10 @@ body.light header { background:rgba(245,240,232,0.5); }
 /* Landscape mobile */
 @media (orientation: landscape) and (max-height: 500px) {
   .weather-panel {
-    top:36px; left:auto; right:8px;
+    top:calc(env(safe-area-inset-top) + 36px);
+    left:auto; right:8px;
     min-width:140px; max-width:168px;
+    width:min(168px, calc(100vw - 16px));
     padding:7px 9px;
     border-radius:9px;
   }
