@@ -2,8 +2,6 @@
 // quotes.js — Internet-fetched daily quote per user
 // ============================================================
 const QUOTE_CACHE_KEY = 'tikitak_daily_quote_cache_v2';
-const QUOTE_PAGE_SIZE = 30;
-const QUOTE_POOL_SIZE = 100;
 const QUOTE_MAX_LENGTH = 92;
 const QUOTE_RETRY_MS = 30 * 60 * 1000;
 const QUOTE_FETCH_TIMEOUT = 6000;
@@ -118,51 +116,24 @@ async function fetchJsonWithTimeout(url) {
 }
 
 async function fetchQuotePool(seed) {
-  const pageCount = Math.max(1, Math.ceil(QUOTE_POOL_SIZE / QUOTE_PAGE_SIZE));
-  const pageIndex = seed % pageCount;
-  const skip = pageIndex * QUOTE_PAGE_SIZE;
-  const directUrl = 'https://dummyjson.com/quotes?limit=' + QUOTE_PAGE_SIZE + '&skip=' + skip + '&select=quote,author';
-  const urls = [
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
-    directUrl
-  ];
-
-  let lastError = null;
-  for (const url of urls) {
-    try {
-      const data = await fetchJsonWithTimeout(url);
-      const quotes = Array.isArray(data.quotes) ? data.quotes : [];
-      const usable = quotes
-        .filter(q => q && q.quote && q.author)
-        .map(q => ({ quote: normalizeQuoteText(q.quote), author: normalizeQuoteText(q.author) }))
-        .filter(q => q.quote.length > 0 && q.author.length > 0);
-      if (usable.length) return usable;
-    } catch(e) {
-      lastError = e;
-    }
-  }
-  throw lastError || new Error('Quote fetch failed');
+  const url = 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent('https://zenquotes.io/api/quotes');
+  const data = await fetchJsonWithTimeout(url);
+  const quotes = Array.isArray(data) ? data : [];
+  const usable = quotes
+    .filter(q => q && q.q && q.a)
+    .map(q => ({ quote: normalizeQuoteText(q.q), author: normalizeQuoteText(q.a) }))
+    .filter(q => q.quote.length > 0 && q.author.length > 0);
+  if (usable.length) return usable;
+  throw new Error('Quote fetch failed');
 }
 
 async function fetchQuoteTranslation(text, targetLang) {
   const pair = 'en|' + targetLang;
-  const directUrl = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + encodeURIComponent(pair);
-  const urls = [
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
-    directUrl
-  ];
-
-  let lastError = null;
-  for (const url of urls) {
-    try {
-      const data = await fetchJsonWithTimeout(url);
-      const translated = normalizeQuoteText(data && data.responseData && data.responseData.translatedText);
-      if (translated) return translated;
-    } catch(e) {
-      lastError = e;
-    }
-  }
-  throw lastError || new Error('Translation fetch failed');
+  const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + encodeURIComponent(pair);
+  const data = await fetchJsonWithTimeout(url);
+  const translated = normalizeQuoteText(data && data.responseData && data.responseData.translatedText);
+  if (translated) return translated;
+  throw new Error('Translation fetch failed');
 }
 
 function pickDailyQuote(quotes, seed) {
