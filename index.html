@@ -5,27 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 
 <!-- ===== SEO (static, no domain) ===== -->
-<title>TIKITAK — Pomodoro Timer | Focus Timer, Ramadan Countdown</title>
-<meta name="description" content="TIKITAK — free Pomodoro timer with live weather background and Ramadan Suhoor/Iftar countdown. Focus better, work in 25-minute sessions. Available in English, Russian and Uzbek.">
-<meta name="keywords" content="tikitak, pomodoro, pomodoro timer, focus timer, pomodoro uz, ramazon taymer, work timer, productivity, pomodoro online, tikitak timer, 25 minute timer, sahar iftar countdown">
-<meta name="robots" content="index, follow">
+<title>TIKITAK Pomodoro Timer | Focus Timer & Ramadan Countdown</title>
+<meta name="description" content="Free Pomodoro timer with 25-minute focus sessions, weather-based ambience, and Ramadan Suhoor/Iftar countdown in English, Russian, and Uzbek.">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
 <meta name="author" content="TIKITAK">
+<meta name="application-name" content="TIKITAK">
 
-<!-- ===== Canonical & hreflang ===== -->
+<!-- ===== Canonical ===== -->
 <link rel="canonical" href="https://tikitak.uz/">
-<link rel="alternate" hreflang="en" href="https://tikitak.uz/">
-<link rel="alternate" hreflang="ru" href="https://tikitak.uz/">
-<link rel="alternate" hreflang="uz" href="https://tikitak.uz/">
-<link rel="alternate" hreflang="x-default" href="https://tikitak.uz/">
 
 <!-- ===== Open Graph ===== -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://tikitak.uz/">
-<meta property="og:title" content="TIKITAK — Pomodoro Timer | Focus &amp; Ramadan Countdown">
-<meta property="og:description" content="Free Pomodoro focus timer with live weather and Ramadan Suhoor/Iftar countdown. Works in English, Russian, Uzbek.">
+<meta property="og:title" content="TIKITAK Pomodoro Timer | Focus Sessions &amp; Ramadan Countdown">
+<meta property="og:description" content="Free Pomodoro timer with weather-based ambience and Ramadan Suhoor/Iftar countdown.">
 <meta property="og:image" content="https://tikitak.uz/icons/icon-512.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="640">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="TIKITAK Pomodoro Timer interface">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ru_RU">
 <meta property="og:locale:alternate" content="uz_UZ">
@@ -33,13 +32,71 @@
 
 <!-- ===== Twitter Card ===== -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="TIKITAK — Pomodoro Timer">
-<meta name="twitter:description" content="Free Pomodoro focus timer with Ramadan countdown. EN / RU / UZ.">
+<meta name="twitter:title" content="TIKITAK Pomodoro Timer">
+<meta name="twitter:description" content="Free Pomodoro timer with weather ambience and Ramadan countdown.">
 <meta name="twitter:image" content="https://tikitak.uz/icons/icon-512.png">
+<meta name="twitter:image:alt" content="TIKITAK Pomodoro Timer interface">
 
 <!-- ===== JSON-LD Structured Data ===== -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"TIKITAK","url":"https://tikitak.uz/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"screenshot":"https://tikitak.uz/icons/icon-512.png","featureList":["Pomodoro Timer","Ramadan Countdown","Live Weather","EN/RU/UZ","PWA"],"inLanguage":["en","ru","uz"],"creator":{"@type":"Organization","name":"TIKITAK"}}
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://tikitak.uz/#website",
+      "url": "https://tikitak.uz/",
+      "name": "TIKITAK",
+      "description": "Free Pomodoro timer with weather-based ambience and Ramadan countdown.",
+      "inLanguage": ["en", "ru", "uz"]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://tikitak.uz/#organization",
+      "name": "TIKITAK",
+      "url": "https://tikitak.uz/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://tikitak.uz/icons/icon-512.png",
+        "width": 640,
+        "height": 640
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://tikitak.uz/#webpage",
+      "url": "https://tikitak.uz/",
+      "name": "TIKITAK Pomodoro Timer",
+      "isPartOf": { "@id": "https://tikitak.uz/#website" },
+      "about": { "@id": "https://tikitak.uz/#app" },
+      "description": "Focus timer with 25-minute sessions, weather-based ambience, and Ramadan Suhoor/Iftar countdown."
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://tikitak.uz/#app",
+      "name": "TIKITAK",
+      "url": "https://tikitak.uz/",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript and a modern browser.",
+      "image": "https://tikitak.uz/icons/icon-512.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Pomodoro timer",
+        "Ramadan countdown",
+        "Weather-reactive background",
+        "English, Russian, and Uzbek interface",
+        "Progressive Web App"
+      ],
+      "inLanguage": ["en", "ru", "uz"],
+      "publisher": { "@id": "https://tikitak.uz/#organization" }
+    }
+  ]
+}
 </script>
 
 
@@ -54,19 +111,21 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <!-- ===== Fonts ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <!-- ===== CSS ===== -->
-<link rel="stylesheet" href="/css/style.css?v=20260306-7">
+<link rel="stylesheet" href="/css/style.css?v=20260306-10">
 
 <!-- ===== Firebase (module) ===== -->
-<script type="module" src="/js/firebase.js?v=20260306-7"></script>
+<script type="module" src="/js/firebase.js?v=20260306-10"></script>
 </head>
 <body>
 
 <div id="weatherBg"><div id="weatherElements"></div></div>
 <div id="contextGlow" aria-hidden="true"></div>
-<div class="weather-panel clear day" id="weatherPanel" aria-live="polite">
+<div class="weather-panel clear day" id="weatherPanel" aria-live="polite" data-nosnippet>
   <div class="weather-panel-kicker" id="weatherKicker">CURRENT WEATHER</div>
   <div class="weather-panel-main">
     <div class="weather-panel-icon" id="weatherIcon">☀️</div>
@@ -80,7 +139,7 @@
     </div>
   </div>
 </div>
-<div class="context-card" id="contextCard" aria-live="polite">
+<div class="context-card" id="contextCard" aria-live="polite" data-nosnippet>
   <div class="context-card-top">
     <span class="context-pill" id="contextPill">MORNING</span>
     <span class="context-weather">
@@ -92,11 +151,11 @@
   <div class="context-subtitle" id="contextSubtitle">Warm light and clean focus for your first session.</div>
 </div>
 
-<div class="status-bar work" id="statusBar"></div>
-<div class="notification" id="notification"></div>
+<div class="status-bar work" id="statusBar" data-nosnippet></div>
+<div class="notification" id="notification" data-nosnippet></div>
 
 <!-- Auth Wall -->
-<div class="auth-wall" id="authWall">
+<div class="auth-wall" id="authWall" data-nosnippet>
   <div class="auth-card">
     <div class="auth-card-logo">TIKITAK</div>
     <div class="auth-card-sub" data-i18n="authSub">Pomodoro Timer</div>
@@ -124,10 +183,18 @@
     </div>
   </header>
 
-  <div class="main-content">
-    <div class="side-stack">
+  <section class="seo-intro" aria-labelledby="pageTitle">
+    <div class="seo-intro-inner">
+      <p class="seo-kicker" data-i18n="seoKicker">Focus Timer</p>
+      <h1 class="seo-title" id="pageTitle" data-i18n="seoTitle">Pomodoro timer with weather ambience and Ramadan countdown</h1>
+      <p class="seo-copy" data-i18n="seoIntro">TIKITAK helps you work in clean 25-minute sessions with a multilingual interface, weather-reactive visuals, and a built-in Suhoor/Iftar countdown.</p>
+    </div>
+  </section>
+
+  <main class="main-content" id="mainContent">
+    <aside class="side-stack" aria-label="Support panels">
       <!-- Ramadan Card -->
-      <div class="ramadan-card" id="ramadanCard">
+      <div class="ramadan-card" id="ramadanCard" data-nosnippet>
         <div class="ramadan-header">
           <span class="ramadan-icon">🌙</span>
           <span class="ramadan-title" data-i18n="ramadan">RAMADAN</span>
@@ -146,15 +213,15 @@
           <div class="countdown-time" id="countdownTime">12:37:00</div>
         </div>
       </div>
-      <div class="daily-quote" id="dailyQuoteCard" aria-live="polite">
+      <div class="daily-quote" id="dailyQuoteCard" aria-live="polite" data-nosnippet>
         <div class="daily-quote-text" id="dailyQuoteText" data-i18n="quoteLoading">Loading quote...</div>
         <div class="daily-quote-author" id="dailyQuoteAuthor" data-i18n="quoteSource">ONLINE SOURCE</div>
       </div>
-    </div>
+    </aside>
 
     <!-- Timer -->
-    <div class="timer-section">
-      <div class="mode-tabs">
+    <section class="timer-section" aria-labelledby="pageTitle" data-nosnippet>
+      <div class="mode-tabs" data-nosnippet>
         <button class="mode-tab active" data-mode="work" onclick="switchMode('work')">⚡ <span data-i18n="work">WORK</span></button>
         <button class="mode-tab" data-mode="short" onclick="switchMode('short')">☕ <span data-i18n="shortBreak">BREAK</span></button>
         <button class="mode-tab" data-mode="long" onclick="switchMode('long')">🌙 <span data-i18n="longBreak">LONG BREAK</span></button>
@@ -179,8 +246,8 @@
           <button class="mini-btn" onclick="event.stopPropagation();skipSession()" title="Skip">⏭</button>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 </div>
 
 <!-- Hidden user chip template -->
@@ -195,18 +262,18 @@
 </div>
 
 <!-- ===== JS modules (dependency order) ===== -->
-<script src="/js/i18n.js?v=20260306-7"></script>
-<script src="/js/state.js?v=20260306-7"></script>
-<script src="/js/audio.js?v=20260306-7"></script>
-<script src="/js/weather.js?v=20260306-7"></script>
-<script src="/js/context.js?v=20260306-7"></script>
-<script src="/js/quotes.js?v=20260306-9"></script>
-<script src="/js/ramadan.js?v=20260306-7"></script>
-<script src="/js/timer.js?v=20260306-7"></script>
-<script src="/js/ui.js?v=20260306-7"></script>
-<script src="/js/sync.js?v=20260306-7"></script>
-<script src="/js/auth.js?v=20260306-7"></script>
-<script src="/js/init.js?v=20260306-7"></script>
+<script src="/js/i18n.js?v=20260306-10"></script>
+<script src="/js/state.js?v=20260306-10"></script>
+<script src="/js/audio.js?v=20260306-10"></script>
+<script src="/js/weather.js?v=20260306-10"></script>
+<script src="/js/context.js?v=20260306-10"></script>
+<script src="/js/quotes.js?v=20260306-10"></script>
+<script src="/js/ramadan.js?v=20260306-10"></script>
+<script src="/js/timer.js?v=20260306-10"></script>
+<script src="/js/ui.js?v=20260306-10"></script>
+<script src="/js/sync.js?v=20260306-10"></script>
+<script src="/js/auth.js?v=20260306-10"></script>
+<script src="/js/init.js?v=20260306-10"></script>
 
 </body>
 </html>
