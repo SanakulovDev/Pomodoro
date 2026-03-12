@@ -76,10 +76,20 @@ function updateWeatherBadge() {
   document.getElementById('weatherLocation').textContent = t('weatherLocation');
 }
 
+function applyWeatherBodyClass() {
+  // Remove all wx- classes
+  const toRemove = [...document.body.classList].filter(c => c.startsWith('wx-'));
+  toRemove.forEach(c => document.body.classList.remove(c));
+  // Add new weather+isDay class for timer color theming
+  const dayNight = weatherData.isDay ? 'day' : 'night';
+  document.body.classList.add(`wx-${currentWeather}-${dayNight}`);
+}
+
 function renderWeather() {
   const bg = document.getElementById('weatherBg');
   const el = document.getElementById('weatherElements');
   bg.className = `${currentWeather} ${weatherData.isDay ? 'day' : 'night'}`; el.innerHTML = '';
+  applyWeatherBodyClass();
   stopRainAudio();
 
   if (currentWeather === 'storm') {

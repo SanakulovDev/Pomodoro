@@ -11,6 +11,136 @@
   --short: #4dffb4;
   --long: #4d9fff;
   --ramadan: #c9a84c;
+  /* Weather-reactive timer palette */
+  --wx-work: #ff4d2e;
+  --wx-short: #4dffb4;
+  --wx-long: #4d9fff;
+  --wx-glow-work: rgba(255,77,46,0.3);
+  --wx-glow-short: rgba(77,255,180,0.3);
+  --wx-glow-long: rgba(77,159,255,0.3);
+}
+
+/* ===== WEATHER-REACTIVE TIMER COLORS ===== */
+/* Clear Day — warm golden sun energy */
+body.wx-clear-day {
+  --work: #ff6b1a;
+  --short: #38e8a0;
+  --long: #5bb8ff;
+  --wx-work: #ff6b1a;
+  --wx-short: #38e8a0;
+  --wx-long: #5bb8ff;
+  --wx-glow-work: rgba(255,107,26,0.38);
+  --wx-glow-short: rgba(56,232,160,0.32);
+  --wx-glow-long: rgba(91,184,255,0.32);
+}
+/* Clear Night — cool electric blue focus */
+body.wx-clear-night {
+  --work: #5ea7ff;
+  --short: #4dffcc;
+  --long: #b07bff;
+  --wx-work: #5ea7ff;
+  --wx-short: #4dffcc;
+  --wx-long: #b07bff;
+  --wx-glow-work: rgba(94,167,255,0.34);
+  --wx-glow-short: rgba(77,255,204,0.28);
+  --wx-glow-long: rgba(176,123,255,0.28);
+}
+/* Rain Day */
+body.wx-rain-day {
+  --work: #4fa3e0;
+  --short: #7bdfb8;
+  --long: #8fa8e8;
+  --wx-work: #4fa3e0;
+  --wx-short: #7bdfb8;
+  --wx-long: #8fa8e8;
+  --wx-glow-work: rgba(79,163,224,0.38);
+  --wx-glow-short: rgba(123,223,184,0.30);
+  --wx-glow-long: rgba(143,168,232,0.30);
+}
+/* Rain Night */
+body.wx-rain-night {
+  --work: #6db8f0;
+  --short: #4ddfc0;
+  --long: #9a8fff;
+  --wx-work: #6db8f0;
+  --wx-short: #4ddfc0;
+  --wx-long: #9a8fff;
+  --wx-glow-work: rgba(109,184,240,0.36);
+  --wx-glow-short: rgba(77,223,192,0.28);
+  --wx-glow-long: rgba(154,143,255,0.28);
+}
+/* Storm */
+body.wx-storm-day,
+body.wx-storm-night {
+  --work: #a78bff;
+  --short: #4dffdd;
+  --long: #60b0ff;
+  --wx-work: #a78bff;
+  --wx-short: #4dffdd;
+  --wx-long: #60b0ff;
+  --wx-glow-work: rgba(167,139,255,0.44);
+  --wx-glow-short: rgba(77,255,221,0.32);
+  --wx-glow-long: rgba(96,176,255,0.32);
+}
+/* Snow Day */
+body.wx-snow-day {
+  --work: #6bc4ff;
+  --short: #a0f0d8;
+  --long: #c8b4ff;
+  --wx-work: #6bc4ff;
+  --wx-short: #a0f0d8;
+  --wx-long: #c8b4ff;
+  --wx-glow-work: rgba(107,196,255,0.36);
+  --wx-glow-short: rgba(160,240,216,0.28);
+  --wx-glow-long: rgba(200,180,255,0.28);
+}
+/* Snow Night */
+body.wx-snow-night {
+  --work: #8bbfe0;
+  --short: #7de0c8;
+  --long: #b8a0f8;
+  --wx-work: #8bbfe0;
+  --wx-short: #7de0c8;
+  --wx-long: #b8a0f8;
+  --wx-glow-work: rgba(139,191,224,0.34);
+  --wx-glow-short: rgba(125,224,200,0.28);
+  --wx-glow-long: rgba(184,160,248,0.28);
+}
+/* Fog */
+body.wx-fog-day,
+body.wx-fog-night {
+  --work: #c0a86a;
+  --short: #7acfb8;
+  --long: #8fa0c8;
+  --wx-work: #c0a86a;
+  --wx-short: #7acfb8;
+  --wx-long: #8fa0c8;
+  --wx-glow-work: rgba(192,168,106,0.34);
+  --wx-glow-short: rgba(122,207,184,0.28);
+  --wx-glow-long: rgba(143,160,200,0.28);
+}
+/* Cloudy */
+body.wx-cloudy-day {
+  --work: #ff7a3d;
+  --short: #4dcfb4;
+  --long: #5590e8;
+  --wx-work: #ff7a3d;
+  --wx-short: #4dcfb4;
+  --wx-long: #5590e8;
+  --wx-glow-work: rgba(255,122,61,0.36);
+  --wx-glow-short: rgba(77,207,180,0.28);
+  --wx-glow-long: rgba(85,144,232,0.28);
+}
+body.wx-cloudy-night {
+  --work: #7788e8;
+  --short: #4ddfb8;
+  --long: #a080f8;
+  --wx-work: #7788e8;
+  --wx-short: #4ddfb8;
+  --wx-long: #a080f8;
+  --wx-glow-work: rgba(119,136,232,0.36);
+  --wx-glow-short: rgba(77,223,184,0.28);
+  --wx-glow-long: rgba(160,128,248,0.28);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { height:100%; overflow:hidden; }
@@ -614,18 +744,18 @@ header {
   color:rgba(232,232,240,0.58);
 }
 
-/* Pulse when running */
+/* Pulse when running — uses weather-reactive glow vars */
 @keyframes ringPulseWork {
-  0% { box-shadow: 0 0 0 0 rgba(255,77,46,0.3); }
-  100% { box-shadow: 0 0 0 15px rgba(255,77,46,0); }
+  0% { box-shadow: 0 0 0 0 var(--wx-glow-work); }
+  100% { box-shadow: 0 0 0 18px rgba(0,0,0,0); }
 }
 @keyframes ringPulseShort {
-  0% { box-shadow: 0 0 0 0 rgba(77,255,180,0.3); }
-  100% { box-shadow: 0 0 0 15px rgba(77,255,180,0); }
+  0% { box-shadow: 0 0 0 0 var(--wx-glow-short); }
+  100% { box-shadow: 0 0 0 18px rgba(0,0,0,0); }
 }
 @keyframes ringPulseLong {
-  0% { box-shadow: 0 0 0 0 rgba(77,159,255,0.3); }
-  100% { box-shadow: 0 0 0 15px rgba(77,159,255,0); }
+  0% { box-shadow: 0 0 0 0 var(--wx-glow-long); }
+  100% { box-shadow: 0 0 0 18px rgba(0,0,0,0); }
 }
 .clock-wrap.running::after {
   content:''; position:absolute; inset:-8px; border-radius:50%;
@@ -954,4 +1084,213 @@ body.light .daily-quote-author {
     transition-duration:0.01ms !important;
     scroll-behavior:auto !important;
   }
+}
+
+/* ===== ENHANCED WEATHER BACKGROUNDS ===== */
+
+/* Clear Day — vibrant sky with horizon haze */
+#weatherBg.clear.day {
+  background: linear-gradient(180deg,
+    #6ab4ff 0%,
+    #4aa0f8 22%,
+    #62b8f7 52%,
+    #8fcffa 75%,
+    #c2e8ff 100%);
+}
+
+/* Clear Night — deep cosmic navy */
+#weatherBg.clear.night,
+#weatherBg.clear {
+  background: linear-gradient(180deg,
+    #060c18 0%,
+    #0c1a32 28%,
+    #132240 55%,
+    #1a3058 78%,
+    #1d3868 100%);
+}
+
+/* Rain Day — heavy steel overcast */
+#weatherBg.rain.day {
+  background: linear-gradient(180deg,
+    #3a4f62 0%,
+    #2e4058 28%,
+    #1f3250 60%,
+    #162945 88%,
+    #122040 100%);
+}
+
+/* Rain Night — deep ocean storm */
+#weatherBg.rain.night,
+#weatherBg.rain {
+  background: linear-gradient(180deg,
+    #0d0f1f 0%,
+    #111830 30%,
+    #0d1d3a 58%,
+    #0a2040 82%,
+    #0d2448 100%);
+}
+/* Rain shimmer overlay */
+#weatherBg.rain::after {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 60px,
+    rgba(100,149,237,0.03) 60px,
+    rgba(100,149,237,0.03) 62px
+  );
+  pointer-events:none;
+}
+
+/* Snow Day — pale icy light */
+#weatherBg.snow.day {
+  background: linear-gradient(180deg,
+    #d8e8f8 0%,
+    #c2d5ec 32%,
+    #aec4de 60%,
+    #9db4cc 82%,
+    #8daabe 100%);
+}
+
+/* Snow Night — dark blue-indigo cold */
+#weatherBg.snow.night,
+#weatherBg.snow {
+  background: linear-gradient(180deg,
+    #0f1225 0%,
+    #1a2038 35%,
+    #222d46 60%,
+    #2a3555 82%,
+    #2e3d60 100%);
+}
+
+/* Fog Day — washed-out pearl */
+#weatherBg.fog.day {
+  background: linear-gradient(180deg,
+    #d4dde6 0%,
+    #c8d4de 30%,
+    #b8c6d2 60%,
+    #aab8c4 82%,
+    #9dadb8 100%);
+}
+
+/* Fog Night — dark matte slate */
+#weatherBg.fog.night,
+#weatherBg.fog {
+  background: linear-gradient(180deg,
+    #3a4455 0%,
+    #4a5568 35%,
+    #5a6678 60%,
+    #626f82 82%,
+    #6b788e 100%);
+}
+/* Fog glow layer */
+#weatherBg.fog::after {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255,255,255,0.12) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+/* Cloudy Day — heavy overcast silver */
+#weatherBg.cloudy.day {
+  background: linear-gradient(180deg,
+    #6e828f 0%,
+    #607785 28%,
+    #546a78 55%,
+    #4c6270 80%,
+    #456070 100%);
+}
+
+/* Cloudy Night — dark charcoal */
+#weatherBg.cloudy.night,
+#weatherBg.cloudy {
+  background: linear-gradient(180deg,
+    #0f1218 0%,
+    #16202a 30%,
+    #1e2c38 58%,
+    #243240 82%,
+    #283848 100%);
+}
+
+/* Storm — near-black electric threat */
+#weatherBg.storm.day,
+#weatherBg.storm.night,
+#weatherBg.storm {
+  background: linear-gradient(180deg,
+    #06090f 0%,
+    #0d1320 30%,
+    #131d30 55%,
+    #18263d 78%,
+    #1c2c44 100%);
+}
+/* Storm electric violet tint */
+#weatherBg.storm::after {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(120,80,200,0.14) 0%, transparent 55%);
+  pointer-events:none;
+}
+
+/* Enhanced sun */
+#weatherBg.clear.day .sun {
+  width:132px; height:132px;
+  background: radial-gradient(circle, #fff5cc 0%, #ffd700 28%, #ff9500 65%, transparent 100%);
+  box-shadow:
+    0 0 60px 20px rgba(255,215,0,0.35),
+    0 0 120px 50px rgba(255,165,0,0.2),
+    0 0 260px 100px rgba(255,120,0,0.1);
+}
+/* Horizon warm glow for clear day */
+#weatherBg.clear.day .sky-glow {
+  background: radial-gradient(circle, rgba(255,200,80,0.18), rgba(255,160,60,0.06) 50%, transparent 75%);
+  bottom: 8%; left: 5%;
+  width: 55vw; height: 28vw;
+  max-width: 500px; max-height: 240px;
+  border-radius: 50%;
+  filter: blur(20px);
+}
+
+/* Enhanced moon */
+.moon {
+  box-shadow:
+    0 0 36px rgba(191,219,254,0.28),
+    0 0 90px rgba(96,165,250,0.14),
+    0 0 200px rgba(60,120,220,0.08);
+}
+
+/* Rain: heavier drops, more visible streaks */
+.raindrop {
+  width: 1.5px;
+  background: linear-gradient(transparent, rgba(120,168,255,0.55));
+  transform: rotate(10deg);
+}
+
+/* Enhanced snow drift at bottom */
+.snow-drift {
+  background: radial-gradient(ellipse at bottom,
+    rgba(255,255,255,0.55) 0%,
+    rgba(226,232,240,0.22) 42%,
+    transparent 72%);
+}
+
+/* Snowflakes — more varied */
+.snowflake {
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 0 4px rgba(200,220,255,0.6);
+}
+
+/* Storm: denser cloud bottoms */
+.storm-cloud {
+  background: radial-gradient(ellipse,
+    rgba(100,112,138,0.32) 0%,
+    rgba(40,52,72,0.22) 48%,
+    transparent 70%);
+}
+
+/* Weather-reactive timer — smooth transition */
+#timeDisplay,
+.clock-progress,
+.status-bar {
+  transition: color 1.8s ease, stroke 1.8s ease, background 1.8s ease;
 }
