@@ -32,9 +32,9 @@ function releaseWakeLock() {
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) requestWakeLock();
+  if (!document.hidden && (state.running || document.fullscreenElement || iosFakeFullscreen)) requestWakeLock();
+  if (document.hidden && !state.running && !document.fullscreenElement && !iosFakeFullscreen) releaseWakeLock();
 });
-requestWakeLock();
 
 // --- Fullscreen ---
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -60,8 +60,6 @@ document.addEventListener('fullscreenchange', () => {
   if (document.fullscreenElement) requestWakeLock();
   else if (!state.running) releaseWakeLock();
 });
-
-if (isStandalone) { window.addEventListener('load', () => requestWakeLock()); }
 
 // Visibility — recalculate timer on return from background
 document.addEventListener('visibilitychange', () => {

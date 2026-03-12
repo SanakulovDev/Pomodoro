@@ -1,8 +1,10 @@
 {
   "name": "TIKITAK — Pomodoro Timer",
   "short_name": "TIKITAK",
-  "description": "Focus timer with Ramadan countdown and live weather",
+  "description": "Free Pomodoro timer with weather ambience and Ramadan countdown",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
@@ -16,7 +18,7 @@
     },
     {
       "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "sizes": "640x640",
       "type": "image/png",
       "purpose": "any maskable"
     }

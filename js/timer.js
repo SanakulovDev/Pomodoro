@@ -38,6 +38,7 @@ function updateModeUI() {
   const cw = document.getElementById('clockWrap');
   cw.classList.remove('mode-work','mode-short','mode-long');
   cw.classList.add('mode-' + state.mode);
+  updateTimerAccessibility();
   updateSessionDots();
 }
 
@@ -45,10 +46,26 @@ function updateDisplay() {
   const mins = Math.floor(state.timeLeft / 60), secs = state.timeLeft % 60;
   const str = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
   document.getElementById('timeDisplay').textContent = str;
-  document.title = str + ' — TIKITAK';
+  if (state.running) {
+    const modeKey = state.mode === 'work' ? 'work' : state.mode === 'short' ? 'shortBreak' : 'longBreak';
+    document.title = str + ' | ' + t(modeKey) + ' | TIKITAK';
+  } else {
+    document.title = 'TIKITAK | ' + t('seoTitle');
+  }
   const total = state.totalTime || getModeTime(state.mode);
   const offset = CIRCUMFERENCE * (1 - state.timeLeft / total);
   document.getElementById('progressArc').style.strokeDashoffset = offset;
+}
+
+function updateTimerAccessibility() {
+  const clock = document.getElementById('clockWrap');
+  if (!clock) return;
+  const fullTime = getModeTime(state.mode);
+  let labelKey = 'timerResume';
+  if (state.running) labelKey = 'timerPause';
+  else if (!state.timeLeft || state.timeLeft === fullTime) labelKey = 'timerStart';
+  clock.setAttribute('aria-label', t(labelKey));
+  clock.setAttribute('aria-pressed', state.running ? 'true' : 'false');
 }
 
 function updateSessionDots() {
@@ -63,6 +80,12 @@ function updateSessionDots() {
 
 function toggleTimer() { if (state.running) stopTimer(); else startTimer(); }
 
+function handleClockKeydown(e) {
+  if (e.code !== 'Space' && e.code !== 'Enter') return;
+  e.preventDefault();
+  toggleTimer();
+}
+
 function startTimer() {
   if (state.timeLeft === 0) { state.timeLeft = getModeTime(state.mode); state.totalTime = state.timeLeft; }
   state.running = true;
@@ -71,6 +94,7 @@ function startTimer() {
   document.getElementById('clockHint').textContent = t('clickPause');
   tickInterval = setInterval(tick, 1000);
   requestWakeLock(); saveState();
+  updateTimerAccessibility();
   syncTimerState();
 }
 
@@ -80,6 +104,7 @@ function stopTimer() {
   document.getElementById('clockWrap').classList.remove('running');
   document.getElementById('clockHint').textContent = t('clickResume');
   if (!document.fullscreenElement) releaseWakeLock(); saveState();
+  updateTimerAccessibility();
   syncTimerState();
 }
 
@@ -87,6 +112,7 @@ function resetTimer() {
   if (state.running) stopTimer();
   state.timeLeft = getModeTime(state.mode); state.totalTime = state.timeLeft; state.targetEndTime = null;
   document.getElementById('clockHint').textContent = t('clickStart');
+  updateTimerAccessibility();
   updateDisplay(); saveState();
   syncTimerState();
 }
@@ -108,6 +134,7 @@ function handleSessionEnd(silent) {
   document.getElementById('clockWrap').classList.remove('running');
   document.getElementById('clockHint').textContent = t('clickStart');
   if (!document.fullscreenElement) releaseWakeLock();
+  updateTimerAccessibility();
   if (state.mode === 'work') {
     state.sessionCount++; recordPomodoro();
     if (!silent) { playAlertSound(); notify(t('pomoDone')); }

@@ -4,26 +4,90 @@
 const FREE_POMODOROS = 3;
 let currentUser = null;
 let guestPomos = parseInt(localStorage.getItem('zaman_guest_pomos') || '0');
+let firebaseLoadPromise = null;
+let firebaseAuthReady = false;
+const FIREBASE_MODULE_SRC = '/js/firebase.js?v=20260306-11';
 
 function checkAuthWall() { if (currentUser) return; if (guestPomos >= FREE_POMODOROS) showAuthWall(); }
-function showAuthWall() { document.getElementById('authWall').classList.add('visible'); }
-function hideAuthWall() { document.getElementById('authWall').classList.remove('visible'); }
+function showAuthWall() {
+  const wall = document.getElementById('authWall');
+  wall.classList.add('visible');
+  wall.setAttribute('aria-hidden', 'false');
+}
+function hideAuthWall() {
+  const wall = document.getElementById('authWall');
+  wall.classList.remove('visible');
+  wall.setAttribute('aria-hidden', 'true');
+}
 function skipAuth() { hideAuthWall(); notify(t('limitedMode')); }
+
+function waitForFirebase(resolve, reject, attempt = 0) {
+  if (window._fb) {
+    resolve(window._fb);
+    return;
+  }
+  if (attempt > 80) {
+    firebaseLoadPromise = null;
+    reject(new Error('Firebase bootstrap timed out'));
+    return;
+  }
+  setTimeout(() => waitForFirebase(resolve, reject, attempt + 1), 50);
+}
+
+function ensureFirebaseLoaded() {
+  if (window._fb) return Promise.resolve(window._fb);
+  if (firebaseLoadPromise) return firebaseLoadPromise;
+
+  firebaseLoadPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-firebase-loader]');
+    if (existing) {
+      waitForFirebase(resolve, reject);
+      return;
+    }
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = FIREBASE_MODULE_SRC;
+    script.dataset.firebaseLoader = 'true';
+    script.onload = () => waitForFirebase(resolve, reject);
+    script.onerror = () => {
+      firebaseLoadPromise = null;
+      reject(new Error('Firebase load failed'));
+    };
+    document.head.appendChild(script);
+  });
+
+  return firebaseLoadPromise;
+}
+
+function scheduleFirebaseBootstrap() {
+  const boot = () => { initFirebaseAuth(); };
+  if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 2500 });
+  else setTimeout(boot, 1200);
+}
 
 async function firebaseLogin() {
   const btn = document.getElementById('googleLoginBtn');
   const hdrBtn = document.getElementById('headerLoginBtn');
-  if (btn) { btn.textContent = t('signingIn'); btn.disabled = true; }
+  const btnLabel = btn ? btn.querySelector('span') : null;
+  if (btn) {
+    if (btnLabel) btnLabel.textContent = t('signingIn');
+    else btn.textContent = t('signingIn');
+    btn.disabled = true;
+  }
   if (hdrBtn) { hdrBtn.textContent = '...'; hdrBtn.disabled = true; }
   try {
-    const fb = window._fb; if (!fb) { console.error('Firebase not loaded'); return; }
+    const fb = await ensureFirebaseLoaded();
+    if (!firebaseAuthReady) await initFirebaseAuth();
     await fb.signInWithPopup(fb.auth, fb.provider);
   } catch(e) {
-    console.error('Auth error:', e.code, e.message);
     if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
       try { await window._fb.signInWithRedirect(window._fb.auth, window._fb.provider); } catch(e2) {}
     }
-    if (btn) { btn.innerHTML = t('googleLogin'); btn.disabled = false; }
+    if (btn) {
+      if (btnLabel) btnLabel.textContent = t('googleLogin');
+      else btn.textContent = t('googleLogin');
+      btn.disabled = false;
+    }
     if (hdrBtn) { hdrBtn.textContent = t('signIn'); hdrBtn.disabled = false; }
   }
 }
@@ -38,8 +102,11 @@ function updateUserUI(user) {
   const slot = document.getElementById('headerUserSlot'), cw = document.getElementById('userChipWrap');
   const hdrLogin = document.getElementById('headerLoginBtn');
   if (user) {
-    document.getElementById('userAvatar').src = user.photoURL || '';
-    document.getElementById('userName').textContent = user.displayName?.split(' ')[0] || 'User';
+    const avatar = document.getElementById('userAvatar');
+    const shortName = user.displayName?.split(' ')[0] || 'User';
+    avatar.src = user.photoURL || '';
+    avatar.alt = shortName;
+    document.getElementById('userName').textContent = shortName;
     cw.style.display = 'block'; slot.appendChild(cw); hideAuthWall();
     if (hdrLogin) hdrLogin.style.display = 'none';
   } else {
@@ -77,21 +144,25 @@ async function cloudLoadData() {
 }
 
 function initFirebaseAuth() {
-  if (!window._fb) { setTimeout(initFirebaseAuth, 200); return; }
-  window._fb.getRedirectResult(window._fb.auth).catch(() => {});
-  window._fb.onAuthStateChanged(window._fb.auth, async (user) => {
-    currentUser = user; updateUserUI(user);
-    if (typeof updateDailyQuote === 'function') updateDailyQuote();
-    if (user) {
-      guestPomos = 0; localStorage.removeItem('zaman_guest_pomos'); hideAuthWall();
-      await cloudLoadData();
-      listenTimerSync(user.uid);
-      setInterval(cloudSaveAnalytics, 120000);
-    } else {
-      stopTimerSync();
-      checkAuthWall();
-    }
-  });
+  if (firebaseAuthReady) return Promise.resolve();
+  return ensureFirebaseLoaded().then(() => {
+    if (firebaseAuthReady) return;
+    firebaseAuthReady = true;
+    window._fb.getRedirectResult(window._fb.auth).catch(() => {});
+    window._fb.onAuthStateChanged(window._fb.auth, async (user) => {
+      currentUser = user; updateUserUI(user);
+      if (typeof updateDailyQuote === 'function') updateDailyQuote();
+      if (user) {
+        guestPomos = 0; localStorage.removeItem('zaman_guest_pomos'); hideAuthWall();
+        await cloudLoadData();
+        listenTimerSync(user.uid);
+        setInterval(cloudSaveAnalytics, 120000);
+      } else {
+        stopTimerSync();
+        checkAuthWall();
+      }
+    });
+  }).catch(() => {});
 }
 
 // Guest pomodoro tracking

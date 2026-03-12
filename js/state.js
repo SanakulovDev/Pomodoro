@@ -35,6 +35,7 @@ function loadState() {
       tickInterval = setInterval(tick, 1000);
       document.getElementById('clockWrap').classList.add('running');
       document.getElementById('clockHint').textContent = t('clickPause');
+      if (typeof updateTimerAccessibility === 'function') updateTimerAccessibility();
     }
   } catch(e) { console.warn('State load failed', e); }
 }

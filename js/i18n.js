@@ -25,6 +25,14 @@ const I18N = {
     cloudLoaded: '☁️ Data loaded',
     signingIn: 'Signing in...',
     signIn: 'Sign In',
+    langSwitch: 'Switch language',
+    fullscreen: 'Toggle fullscreen',
+    toggleTheme: 'Toggle theme',
+    resetAction: 'Reset timer',
+    skipAction: 'Skip session',
+    timerStart: 'Start timer',
+    timerPause: 'Pause timer',
+    timerResume: 'Resume timer',
     weatherNow: 'CURRENT WEATHER',
     weatherClear: 'Clear sky',
     weatherCloudy: 'Cloudy',
@@ -78,6 +86,14 @@ const I18N = {
     cloudLoaded: '☁️ Ma\'lumotlar yuklandi',
     signingIn: 'Kirish...',
     signIn: 'Kirish',
+    langSwitch: 'Tilni almashtirish',
+    fullscreen: 'To\'liq ekranga o\'tish',
+    toggleTheme: 'Mavzuni almashtirish',
+    resetAction: 'Taymerni tiklash',
+    skipAction: 'Sessiyani o\'tkazib yuborish',
+    timerStart: 'Taymerni boshlash',
+    timerPause: 'Taymerni to\'xtatish',
+    timerResume: 'Taymerni davom ettirish',
     weatherNow: 'HOZIRGI OB-HAVO',
     weatherClear: 'Ochiq osmon',
     weatherCloudy: 'Bulutli',
@@ -131,6 +147,14 @@ const I18N = {
     cloudLoaded: '☁️ Данные загружены',
     signingIn: 'Вход...',
     signIn: 'Войти',
+    langSwitch: 'Сменить язык',
+    fullscreen: 'Переключить полноэкранный режим',
+    toggleTheme: 'Переключить тему',
+    resetAction: 'Сбросить таймер',
+    skipAction: 'Пропустить сессию',
+    timerStart: 'Запустить таймер',
+    timerPause: 'Поставить таймер на паузу',
+    timerResume: 'Продолжить таймер',
     weatherNow: 'ПОГОДА СЕЙЧАС',
     weatherClear: 'Ясно',
     weatherCloudy: 'Облачно',
@@ -172,10 +196,14 @@ function applyLang() {
   document.getElementById('langBtn').textContent = currentLang.toUpperCase();
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.setAttribute('title', t(el.dataset.i18nTitle)); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   if (typeof state !== 'undefined') {
     const labels = { work: t('workTime'), short: t('shortTime'), long: t('longTime') };
     document.getElementById('modeLabel').textContent = labels[state.mode];
   }
+  if (typeof updateDisplay === 'function') updateDisplay();
+  if (typeof updateTimerAccessibility === 'function') updateTimerAccessibility();
   if (typeof updateWeatherBadge === 'function') updateWeatherBadge();
   if (typeof updateContextScene === 'function') updateContextScene();
   if (typeof updateDailyQuote === 'function') updateDailyQuote();

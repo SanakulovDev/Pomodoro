@@ -535,6 +535,10 @@ header {
   transition: transform 0.15s;
 }
 .clock-wrap:active { transform:scale(0.97); }
+.clock-wrap:focus-visible {
+  outline:2px solid rgba(255,255,255,0.82);
+  outline-offset:8px;
+}
 /* Play/pause overlay hint */
 .clock-wrap:not(.running) .clock-center::after {
   content:'▶'; position:absolute; bottom:12%; font-size:0.7rem;
@@ -940,3 +944,14 @@ body.light .daily-quote-author {
 /* Fullscreen */
 :fullscreen { background:transparent; }
 :fullscreen .app-container { height:100vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
